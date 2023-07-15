@@ -1,2 +1,2 @@
-# Baochess
- A Unity game that runs Baochess
+# baochess
+A Unity build of the internationally-acclaimed chess variant Baochess
