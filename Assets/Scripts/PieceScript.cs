@@ -12,6 +12,7 @@ public class PieceScript : MonoBehaviour {
     public void IncrementMoveCounter() => MoveCounter++; // USE THIS FUNCTION
     public int TurnsOnBoard { get; protected set; }
     public void IncrementTurnsOnBoardCounter() => TurnsOnBoard++;
+    public void SetTurnsOnBoard(int n) => TurnsOnBoard = n;
     public bool Promoted { get; set; }
 
     public Sprite whiteSprite;

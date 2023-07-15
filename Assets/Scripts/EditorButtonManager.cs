@@ -9,19 +9,19 @@ public class EditorButtonManager : MonoBehaviour
     public Vector3 topLeftPosition;
     public float buttonSpacing;
     
-    private BoardScript _boardScript;
+    // private BoardScript _boardScript;
     private static List<GameObject> _editorButtons;
     
     
     // Start is called before the first frame update
     void Start() {
-        _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
+        // _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
         _editorButtons = new();
     }
 
     public void InstantiateEditorButtons() {
 
-        int nPieces = _boardScript.TypePieceDict.Count - 1; // Accounts for the empty piece
+        int nPieces = BoardScript.TypePieceDict.Count - 1; // Accounts for the empty piece
 
         for (int i = 0; i < EditorButtonScript.AllPieceTypes.Count; i++) {
 

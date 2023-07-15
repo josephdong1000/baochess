@@ -86,7 +86,7 @@ public class BoardScript : MonoBehaviour {
 
     private Dictionary<char, GameObject> _charPieceDict;
     private Dictionary<PieceScript.PieceType, char> _typeCharDict;
-    public Dictionary<PieceScript.PieceType, GameObject> TypePieceDict;
+    public static Dictionary<PieceScript.PieceType, GameObject> TypePieceDict;
 
     private bool _editingBoard;
 
@@ -224,9 +224,9 @@ public class BoardScript : MonoBehaviour {
         _exitUpdate = false;
         StartCoroutine(ToggleEditBoard(KeyCode.Space));
 
-        // foreach (var tuple in BoardStateScript.BoolsToPiece) {
-        //     Debug.Log(string.Join(",", tuple.Key) + tuple.Value);
-        // }
+        foreach (var tuple in BoardStateScript.BoolsToPiece) {
+            Debug.Log(string.Join(",", tuple.Key) + tuple.Value);
+        }
         //
         // Debug.Log("--");
         //
@@ -257,8 +257,9 @@ public class BoardScript : MonoBehaviour {
         _checkResetSelection = CheckResetSelection(KeyCode.R);
         StartCoroutine(_checkResetSelection);
 
-        Debug.Log(string.Join(",", BoardStateScript.BoardToBools(_board)));
-
+        Debug.Log(string.Join(",", BoardStateScript.BoardToBools(_board, PlayingSide)));
+        Debug.Log(string.Join(",", BoardStateScript.BoolsToBoard(BoardStateScript.BoardToBools(_board, PlayingSide)).Item1));
+        
         
         _exitUpdate = true;
     }

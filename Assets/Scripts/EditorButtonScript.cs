@@ -25,14 +25,14 @@ public class EditorButtonScript : MonoBehaviour {
     void Start() {
         SelectedPieceType = (PieceScript.PieceType.Empty, PieceScript.Side.None);
         _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
-        AllPieceTypes = _boardScript.TypePieceDict.Keys
+        AllPieceTypes = BoardScript.TypePieceDict.Keys
             .Skip(1)
             .Select(s => (s, PieceScript.Side.White))
-            .Concat(_boardScript.TypePieceDict.Keys.Skip(1).Select(s => (s, PieceScript.Side.Black)))
+            .Concat(BoardScript.TypePieceDict.Keys.Skip(1).Select(s => (s, PieceScript.Side.Black)))
             .Append((PieceScript.PieceType.Empty, PieceScript.Side.None))
             .ToList();
         // _editorButtons = new();
-        
+
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _childSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
 
@@ -40,7 +40,7 @@ public class EditorButtonScript : MonoBehaviour {
 
         // Debug.Log(string.Join(",", AllPieceTypes));
     }
-    
+
     private void OnMouseDown() {
         SelectedPieceType = thisPieceType;
     }
@@ -51,7 +51,7 @@ public class EditorButtonScript : MonoBehaviour {
             // Debug.Log(thisPieceType);
             return;
         }
-        
+
         if (thisPieceType.Item1 == PieceScript.PieceType.Empty) {
             _childSpriteRenderer.sprite = spriteList.Last();
         } else {

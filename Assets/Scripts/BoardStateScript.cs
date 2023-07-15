@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public static class BoardStateScript {
+public class BoardStateScript : MonoBehaviour {
     public static readonly Dictionary<bool[], (PieceScript.PieceType, PieceScript.Side, bool)> BoolsToPiece =
         new Dictionary<bool[], (PieceScript.PieceType, PieceScript.Side, bool)> {
             { IntToBools(0), (PieceScript.PieceType.Pawn, PieceScript.Side.White, false) },
@@ -21,7 +21,7 @@ public static class BoardStateScript {
             { IntToBools(11), (PieceScript.PieceType.Footmen, PieceScript.Side.Black, false) },
             { IntToBools(12), (PieceScript.PieceType.King, PieceScript.Side.White, false) }, // if white playing
             { IntToBools(13), (PieceScript.PieceType.King, PieceScript.Side.Black, false) }, // if black playing
-            { IntToBools(14), (PieceScript.PieceType.King, PieceScript.Side.None, false) }, // if neither playing
+            { IntToBools(14), (PieceScript.PieceType.King, PieceScript.Side.None, false) }, // the not playing one
             { IntToBools(15), default },
             { IntToBools(16), (PieceScript.PieceType.Pawn, PieceScript.Side.White, true) }, // moved pawn
             { IntToBools(17), (PieceScript.PieceType.Pawn, PieceScript.Side.Black, true) },
@@ -52,13 +52,13 @@ public static class BoardStateScript {
     /// </summary>
     public static readonly int NumBools = 64 + 5 * 46 + 4; // ~298
 
-    private static BoardScript _boardScript;
+    // private static BoardScript _boardScript;
 
     private static readonly int _boardSize = 8;
     private static readonly int _maxNumPieces = 46;
 
 
-    public static bool[] BoardToBools(GameObject[,] board) {
+    public static bool[] BoardToBools(GameObject[,] board, PieceScript.Side playingSide) {
         bool[] output = new bool[NumBools];
 
         int typeIndex = 0;
@@ -78,19 +78,29 @@ public static class BoardStateScript {
                                    _boardSize * _boardSize + typeIndex * 5,
                                    5);
                     } else {
-                        Array.Copy(PieceToBools[(ps.Type, ps.PieceSide, false)],
-                                   0,
-                                   output,
-                                   _boardSize * _boardSize + typeIndex * 5,
-                                   5);
-                        if (ps.Type == PieceScript.PieceType.Footmen) {
-                            if (ps.whiteSprite) {
-                                footmenMoves |= ps.MoveCounter << 2;
-                            } else {
-                                footmenMoves |= ps.MoveCounter;
+                        if (ps.Type == PieceScript.PieceType.King &&
+                            ps.PieceSide != playingSide) {
+                            Array.Copy(PieceToBools[(PieceScript.PieceType.King, PieceScript.Side.None, false)],
+                                       0,
+                                       output,
+                                       _boardSize * _boardSize + typeIndex * 5,
+                                       5);
+                        } else {
+                            Array.Copy(PieceToBools[(ps.Type, ps.PieceSide, false)],
+                                       0,
+                                       output,
+                                       _boardSize * _boardSize + typeIndex * 5,
+                                       5);
+                            if (ps.Type == PieceScript.PieceType.Footmen) {
+                                if (ps.whiteSprite) {
+                                    footmenMoves |= ps.MoveCounter << 2;
+                                } else {
+                                    footmenMoves |= ps.MoveCounter;
+                                }
                             }
                         }
                     }
+
                     typeIndex += 1;
                 }
             }
@@ -106,6 +116,55 @@ public static class BoardStateScript {
         return output;
     }
 
+    public static (GameObject[,], PieceScript.Side) BoolsToBoard(bool[] bools) {
+        GameObject[,] output = new GameObject[_boardSize, _boardSize];
+        PieceScript.Side playingSide = PieceScript.Side.None;
+        int typeIndex = _boardSize * _boardSize;
+        for (int i = 0; i < _boardSize; i++) {
+            for (int j = 0; j < _boardSize; j++) {
+                if (bools[i * _boardSize + j]) { // Occupied square
+                    Debug.Log(string.Join(",", bools.Skip(typeIndex).Take(5).ToArray()));
+                    Debug.Log(string.Join(",", BoolsToPiece.Keys));
+                    
+                    var (pieceType, side, hasMoved) = BoolsToPiece[bools.Skip(typeIndex).Take(5).ToArray()];
+                    output[i, j] = Instantiate(BoardScript.TypePieceDict[pieceType]);
+                    output[i, j].GetComponent<PieceScript>().PieceSide = side;
+                    if (pieceType == PieceScript.PieceType.King &&
+                        side != PieceScript.Side.None) {
+                        playingSide = side; // Set the playing side
+                    } else if (pieceType == PieceScript.PieceType.Footmen) {
+                        if (side == PieceScript.Side.White) {
+                            output[i, j].GetComponent<PieceScript>()
+                                .SetTurnsOnBoard(
+                                    BoolsToInt(bools.Skip(_boardSize * _boardSize + _maxNumPieces * 5)
+                                                   .Take(2)
+                                                   .ToArray()));
+                        } else {
+                            output[i, j].GetComponent<PieceScript>()
+                                .SetTurnsOnBoard(
+                                    BoolsToInt(bools.Skip(_boardSize * _boardSize + _maxNumPieces * 5 + 2)
+                                                   .Take(2)
+                                                   .ToArray()));
+                        }
+                    }
+                    if (hasMoved) {
+                        output[i, j].GetComponent<PieceScript>().IncrementMoveCounter();
+                    }
+                } else {
+                    output[i, j] = Instantiate(BoardScript.TypePieceDict[PieceScript.PieceType.Empty]);
+                }
+                output[i, j].GetComponent<PieceScript>().Position = (i, j);
+            }
+        }
+
+        if (playingSide == PieceScript.Side.None) {
+            throw new NotImplementedException("what the");
+        }
+
+        return (output, playingSide);
+    }
+
+
     public static bool[] IntToBools(int num, int numBits = 5) {
         BitArray b = new BitArray(new int[] { num });
         bool[] bits = new bool[b.Count];
@@ -113,6 +172,13 @@ public static class BoardStateScript {
         Array.Reverse(bits);
         bits = bits.Skip(bits.Length - numBits).ToArray();
         return bits;
+    }
+
+    public static int BoolsToInt(bool[] bools) {
+        BitArray bitField = new BitArray(bools.Reverse().ToArray());
+        int[] output = new int[1];
+        bitField.CopyTo(output, 0);
+        return output[0];
     }
 
 
