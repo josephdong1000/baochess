@@ -223,6 +223,19 @@ public class BoardScript : MonoBehaviour {
     void Start() {
         _exitUpdate = false;
         StartCoroutine(ToggleEditBoard(KeyCode.Space));
+
+        // foreach (var tuple in BoardStateScript.BoolsToPiece) {
+        //     Debug.Log(string.Join(",", tuple.Key) + tuple.Value);
+        // }
+        //
+        // Debug.Log("--");
+        //
+        // foreach (var tuple in BoardStateScript.PieceToBools) {
+        //     Debug.Log( tuple.Key + string.Join(",", tuple.Value));
+        // }
+        
+        
+        
     }
 
     // Update is called once per frame
@@ -244,6 +257,9 @@ public class BoardScript : MonoBehaviour {
         _checkResetSelection = CheckResetSelection(KeyCode.R);
         StartCoroutine(_checkResetSelection);
 
+        Debug.Log(string.Join(",", BoardStateScript.BoardToBools(_board)));
+
+        
         _exitUpdate = true;
     }
 
@@ -1486,6 +1502,9 @@ public class BoardScript : MonoBehaviour {
                     if (!IsEmptySquare(finalPositionA)) {
                         AttackPositions.Add(finalPositionA);
                     }
+                    // if (!IsEmptySquare(finalPositionB)) {
+                    //     AttackPositions.Add(finalPositionB);
+                    // }
                 }
 
                 // InstantiateCirclesShields(moveName: new List<string> { selectedMoveName });

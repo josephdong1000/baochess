@@ -108,7 +108,7 @@ public class FootmenScript : PieceScript {
     /// Self-delete Footmen after existing for 3 turns, except next to king
     /// </summary>
     public override void AutomaticMove() {
-        if (TurnsOnBoard > 3 &&
+        if (TurnsOnBoard > 1 &&
             BoardScript.GetAdjacentGameObjects(Position, 1, false, true)
                 .FindAll(g => g.GetComponent<PieceScript>().Type == PieceType.King)
                 .FindAll(g => g.GetComponent<PieceScript>().PieceSide == PieceSide)

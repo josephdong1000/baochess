@@ -166,15 +166,26 @@ public class RookScript : PieceScript {
         }
 
         // Check that the two moves have a clear column or row, excluding friendly pawns
-        List<(PieceType, Side)> whitelist = new List<(PieceType, Side)> { (PieceType.Pawn, PieceSide) };
+        List<(PieceType, Side)> whitelist = new List<(PieceType, Side)> {
+            (PieceType.Pawn, PieceSide),
+            (PieceType.King, PieceSide)
+        };
         if (move.Item1 == 0) {
             // row move
             if (!BoardScript.IsClearRow(Position, AddMove(move), whitelist: whitelist)) {
                 return false;
             }
+            // Not a valid move already
+            if (BoardScript.IsClearRow(Position, AddMove(move))) {
+                return false;
+            }
         } else {
             // column move
             if (!BoardScript.IsClearColumn(Position, AddMove(move), whitelist: whitelist)) {
+                return false;
+            }
+            // Not a valid move already
+            if (BoardScript.IsClearColumn(Position, AddMove(move))) {
                 return false;
             }
         }

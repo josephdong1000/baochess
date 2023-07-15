@@ -48,7 +48,7 @@ public class QueenScript : PieceScript {
     // Start is called before the first frame update
     new void Start() {
         base.Start();
-        
+
         // SetSpriteSide();
         GetFriendlyPieces();
         CheckInvertDirection();
@@ -73,15 +73,19 @@ public class QueenScript : PieceScript {
     [SpecialMove]
     public (bool, Dictionary<(int, int), List<PieceType>>) QueenMother((int, int) move) {
         var falseReturn = (false, new Dictionary<(int, int), List<PieceType>>());
-        // Move is adjacent
-        if (!MoveDict["mother"].Contains(move)) {
-            return falseReturn;
+
+        if (move != (0, 0)) {
+            // Move is adjacent or in-place
+            if (!MoveDict["mother"].Contains(move) && move != (0, 0)) {
+                return falseReturn;
+            }
+
+            // Move cannot capture a piece
+            if (!BoardScript.IsEmptySquare(AddMove(move))) {
+                return falseReturn;
+            }
         }
 
-        // Move cannot capture a piece
-        if (!BoardScript.IsEmptySquare(AddMove(move))) {
-            return falseReturn;
-        }
 
         (int, int) queenPostPosition = AddMove(move); // Center position of queenbomb
         List<PieceType> footmenList = new List<PieceType> { PieceType.Footmen }; // Returned Footmen list
@@ -133,7 +137,7 @@ public class QueenScript : PieceScript {
             { Position, new List<PieceType> { PieceType.King } }
         });
     }
-    
+
     [Move]
     public (GameObject, string) CoregencyProtect((int, int) move) {
         // Queen protects self against battlefield command
@@ -143,5 +147,4 @@ public class QueenScript : PieceScript {
 
         return (null, "BattlefieldCommand");
     }
-    
 }
