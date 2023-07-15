@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6255352175695983535
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6255352175695983533}
+  - component: {fileID: 6255352175695983532}
+  - component: {fileID: 7645650259860417256}
+  - component: {fileID: 1156564982251037431}
+  - component: {fileID: 3578027561182182846}
+  - component: {fileID: 6255352174489482604}
+  m_Layer: 0
+  m_Name: Board
+  m_TagString: Board
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6255352175695983533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6255352175695983532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae27222dc0206469ebee68c92f3df6bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardSize: 8
+  pawnPrefab: {fileID: 1445435812483602723, guid: 57456ce29aaa245baa8f8adc6f462602, type: 3}
+  rookPrefab: {fileID: 1645643281394936739, guid: 9d217104860c048dbaa89d452e1dd518, type: 3}
+  knightPrefab: {fileID: 7315756528922811226, guid: 295b0d606dc25417d89eb5813d77bd4f, type: 3}
+  bishopPrefab: {fileID: 5641908559180221500, guid: 0b6254b328f314208a23cca0a947a8a2, type: 3}
+  queenPrefab: {fileID: 6566318685922978365, guid: 7678ced0705ca492abc2f7d9c599d94b, type: 3}
+  kingPrefab: {fileID: 3369511546320071791, guid: 0bc56411ece7449a7bdf2ce1fbe90145, type: 3}
+  footmenPrefab: {fileID: 4186747628876007229, guid: d7bdd87bd4c8044baa8b8f9fb0b0d8bc, type: 3}
+  emptySquare: {fileID: 6660748383338984945, guid: 4b2e298a41b044aa1af5f744d22255b3, type: 3}
+  boardSquare: {fileID: 5201485823728202865, guid: 5718e0cfb560c477f95cf41cf7cb137f, type: 3}
+  circleHighlightPrefab: {fileID: 5240227697339225924, guid: 5062a03fe83434eb7bc8ed42e9e90efa, type: 3}
+  movebox2Prefab: {fileID: 2414531524402497538, guid: 675a5dca649df4ed28cc690d95ca3617, type: 3}
+  movebox3Prefab: {fileID: 1656262625849398571, guid: 45b99c03cfa7140cf89b8b657a04c5f3, type: 3}
+  moveboxInitialPosition: {x: -3.25, y: 8.5, z: 0}
+  replaceBoxPrefab: {fileID: 2148116592656476390, guid: f601e351f8c1c4883ac171205d8fc8c3, type: 3}
+  edgeLength: 1
+  whiteColor: {r: 0.9490196, g: 0.37254903, b: 0.36078432, a: 1}
+  blackColor: {r: 0.4392157, g: 0.75686276, b: 0.7019608, a: 1}
+  selectWaitTime: 0
+--- !u!114 &7645650259860417256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d331c5111e0945719f360e7968de716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1156564982251037431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab6a351139af24e518a0dc554d88845c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3578027561182182846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17aa26d34e6514e068dd6fd583348313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6255352174489482604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6255352175695983535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c834dab8ebe304a8fbc85f2e43668e6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  editorButtonPrefab: {fileID: 4499426676131127982, guid: 92dfe26faa7b54db18822ff0be776956, type: 3}
+  topLeftPosition: {x: 9, y: 7, z: 0}
+  buttonSpacing: 1.25
