@@ -77,12 +77,14 @@ public class BoardScript : MonoBehaviour {
     public List<GameObject> ReplaceBoxList { get; private set; }
     public void AddDeleteList(GameObject go) => DeleteList.Add(go);
     public float MoveboxesHeight { get; private set; }
-    private bool _selectingMove;
+    public static bool SelectingMove;
     private string _selectedMoveName;
     private Dictionary<PieceScript.Side, int> _extraMoves;
     private Dictionary<(string, PieceScript.Side), int> _bannedMoves;
 
     private GameObject[,] _board;
+    // private List<bool[]> _boardStates;
+    private ButtonController.Mode _boardMode = ButtonController.Mode.None;
 
     private Dictionary<char, GameObject> _charPieceDict;
     private Dictionary<PieceScript.PieceType, char> _typeCharDict;
@@ -161,7 +163,7 @@ public class BoardScript : MonoBehaviour {
         RangedPositions = new List<(int, int)>();
         FinalProtectedPositions = new();
         MoveNames = new();
-        _selectingMove = false;
+        SelectingMove = false;
         _extraMoves = new() {
             { PieceScript.Side.White, 0 },
             { PieceScript.Side.Black, 0 }
@@ -171,6 +173,7 @@ public class BoardScript : MonoBehaviour {
             .Concat(MoveList.AllMoveNames.ToDictionary(s => (s, PieceScript.Side.Black), _ => 0))
             .ToDictionary(e => e.Key, e => e.Value);
         _editingBoard = false;
+        // _boardStates = new();
         _charPieceDict = new Dictionary<char, GameObject>() {
             { ' ', null },
             { 'p', pawnPrefab },
@@ -203,39 +206,10 @@ public class BoardScript : MonoBehaviour {
         };
     }
 
-    // public void SaveConfig() {
-    //     //Convert the ConfigData object to a JSON string.
-    //     string json = JsonUtility.ToJson(BoardData);
-    //
-    //     //Write the JSON string to a file on disk.
-    //     File.WriteAllText("BoardData.json", json);
-    // }
-    //
-    // public void LoadConfig() {
-    //     //Get the JSON string from the file on disk.
-    //     string savedJson = File.ReadAllText("BoardData.json");
-    //
-    //     //Convert the JSON string back to a ConfigData object.
-    //     BoardData = JsonUtility.FromJson<BoardData>(savedJson);
-    // }
-
     // Start is called before the first frame update
     void Start() {
         _exitUpdate = false;
-        StartCoroutine(ToggleEditBoard(KeyCode.Space));
-
-        foreach (var tuple in BoardStateScript.BoolsToPiece) {
-            Debug.Log(string.Join(",", tuple.Key) + tuple.Value);
-        }
-        //
-        // Debug.Log("--");
-        //
-        // foreach (var tuple in BoardStateScript.PieceToBools) {
-        //     Debug.Log( tuple.Key + string.Join(",", tuple.Value));
-        // }
-        
-        
-        
+        StartCoroutine(ToggleButtonModes());
     }
 
     // Update is called once per frame
@@ -244,28 +218,30 @@ public class BoardScript : MonoBehaviour {
             return;
         }
 
+        _exitUpdate = true;
+        
         _board ??= new GameObject[boardSize, boardSize];
         HighlightBoard ??= new GameObject[boardSize, boardSize];
 
         ClearBoard();
         PopulateBoard();
-        InstantiateHighlightBoard();
-        UpdatePieceGameObjectPositions();
+        BoardStateScript.StoreBoardState(_board, PlayingSide);
+        InstantiateHighlightBoard(); // Cosmetic
+        UpdatePieceGameObjectPositions(); // Cosmetic
+
 
         _updateGameLoop = UpdateGameLoop();
         StartCoroutine(_updateGameLoop);
         _checkResetSelection = CheckResetSelection(KeyCode.R);
         StartCoroutine(_checkResetSelection);
 
-        Debug.Log(string.Join(",", BoardStateScript.BoardToBools(_board, PlayingSide)));
-        Debug.Log(string.Join(",", BoardStateScript.BoolsToBoard(BoardStateScript.BoardToBools(_board, PlayingSide)).Item1));
-        
-        
-        _exitUpdate = true;
+
+        // _board = BoardStateScript.BoolsToBoard(BoardStateScript.BoardToBools(_board, PlayingSide)).Item1;
+        // PrintBoard();
     }
 
     IEnumerator UpdateGameLoop() {
-        _selectingMove = false;
+        SelectingMove = false;
 
         FetchMoveNames();
 
@@ -289,9 +265,9 @@ public class BoardScript : MonoBehaviour {
             GenerateMultipleMoves();
 
             // Await player input
-            _selectingMove = true;
+            SelectingMove = true;
             yield return SelectMove();
-            // _selectingMove = false;
+            SelectingMove = false;
 
             yield return MovePieces();
 
@@ -299,17 +275,19 @@ public class BoardScript : MonoBehaviour {
             UpdateBannedTurns();
             CheckExtraMove();
             UpdateAutomaticMoves();
-
+            
             // Update visuals and piece data
             UpdatePiecePositions();
             UpdatePieceProperties(PlayingSide);
             DeletePieces();
             UpdatePieceGameObjectPositions();
 
+            
             if (_extraMoves[PlayingSide] > 0) {
                 _extraMoves[PlayingSide] -= 1;
             } else {
                 SwitchPlayers();
+                BoardStateScript.StoreBoardState(_board, PlayingSide); // Update undo move stack
             }
 
             // PrintBoard(showAttack: true, showProtect: true);
@@ -378,15 +356,8 @@ public class BoardScript : MonoBehaviour {
                                                quaternion.identity);
 
                     _board[i, j].GetComponent<PieceScript>().PieceSide = PieceScript.Side.None;
-                    _board[i, j].SetActive(false); // Hide empty GameObjects, not necessary to show
-                    // _board[i, j].GetComponent<PieceScript>().Position = (i, j); // and not necessary to position
+                    // _board[i, j].SetActive(false); // Hide empty GameObjects, not necessary to show
                 }
-
-                // // Instantiate the board beneath the pieces
-                // HighlightBoard[i, j] = Instantiate(boardSquare,
-                //                                    PositionToVector3((i, j)),
-                //                                    quaternion.identity);
-                // HighlightBoard[i, j].GetComponent<SelectScript>().Position = (i, j);
             }
         }
     }
@@ -420,6 +391,8 @@ public class BoardScript : MonoBehaviour {
                 if (!IsEmptySquare((i, j))) {
                     GetPosition((i, j)).transform.position = PositionToVector3((i, j));
                     GetPosition((i, j)).transform.rotation = quaternion.identity;
+                } else {
+                    GetPosition((i, j)).SetActive(false); // Hide empty GameObjects, not necessary to show    
                 }
 
                 HighlightBoard[i, j].transform.position = PositionToVector3((i, j));
@@ -516,7 +489,8 @@ public class BoardScript : MonoBehaviour {
     IEnumerator CheckResetSelection(KeyCode keyCode) {
         while (true) {
             yield return new WaitUntil(() => Input.GetKeyDown(keyCode));
-            if (_selectingMove) {
+            if (SelectingMove) {
+                SelectingMove = false;
                 yield return ResetGameLoop();
             }
 
@@ -524,11 +498,18 @@ public class BoardScript : MonoBehaviour {
         }
     }
 
-    IEnumerator ToggleEditBoard(KeyCode keyCode) {
+    // WIP
+    IEnumerator ToggleButtonModes() {
         IEnumerator editBoardLoop = EditBoardLoop();
-
+        
         while (true) {
-            yield return new WaitUntil(() => Input.GetKeyDown(keyCode));
+            
+            yield return new WaitUntil(() => ButtonController.ButtonMode != ButtonController.Mode.None);
+            _boardMode = ButtonController.ButtonMode;
+            ButtonController.ButtonMode = ButtonController.Mode.None;
+            
+            
+            // yield return new WaitUntil(() => Input.GetKeyDown(keyCode));
             _editingBoard = !_editingBoard;
             if (_editingBoard) {
                 StopCoroutine(_checkResetSelection);
@@ -537,13 +518,11 @@ public class BoardScript : MonoBehaviour {
                 StopCoroutine(nameof(SelectMove));
                 StopCoroutine(nameof(MovePieces));
                 yield return ClearAllVisualsAndWait();
-
-                // editorButtonPrefab.
-
+                
                 Debug.Log("wiping board and preparing edit");
 
                 // Wipe board
-                ClearBoard(board:false, highlightBoard:true);
+                ClearBoard(board: false, highlightBoard: true);
                 // PopulateBoardEmpty();
                 InstantiateHighlightBoard();
                 UpdatePieceGameObjectPositions();
@@ -600,7 +579,7 @@ public class BoardScript : MonoBehaviour {
                 yield return new WaitForSeconds(0.05f); // Hardcoded cooldown
             }
 
-            yield return new WaitUntil(() => Input.GetKeyUp(keyCode));
+            // yield return new WaitUntil(() => Input.GetKeyUp(keyCode));
         }
     }
 
@@ -636,7 +615,7 @@ public class BoardScript : MonoBehaviour {
         StopCoroutine(_updateGameLoop);
         StopCoroutine(nameof(UpdateGameLoop));
 
-        yield return StartCoroutine(ClearAllVisualsAndWait());
+        yield return ClearAllVisualsAndWait();
 
         // Instantiate new GameLoop
         _updateGameLoop = UpdateGameLoop();
@@ -1392,10 +1371,12 @@ public class BoardScript : MonoBehaviour {
 
                         SelectedPositions.RemoveAt(SelectedPositions.Count - 1);
 
+                        SelectingMove = false;
+                        yield return StartCoroutine(ResetGameLoop());
+                        
                         // if (_selectingMove) {
                         //     yield return StartCoroutine(ResetGameLoop());
                         // }
-
                         // ResetGameLoop();
                         // StartCoroutine(ResetGameLoop()); // Click invalid square in board -> reset selection
                     } else if (!pickMove && MoveboxScript.SelectedItem != -1) {
@@ -1475,10 +1456,16 @@ public class BoardScript : MonoBehaviour {
 
                 // Ease out moveboxes
                 foreach (GameObject movebox in MoveboxList) {
-                    if (!narrowedMoveNames.Contains(movebox.GetComponent<MoveboxScript>().MoveName)) {
+                    if (movebox != null &&
+                        !narrowedMoveNames.Contains(movebox.GetComponent<MoveboxScript>().MoveName)) {
                         movebox.GetComponent<MoveboxScript>().FlagEaseOut();
                     }
                 }
+
+                // GameObject[] moveBoxesToDelete = GameObject.FindGameObjectsWithTag("Movebox");
+                // for (int i = 0; i < moveBoxesToDelete.Length; i++) {
+                //     
+                // }
 
                 ClearCirclePositionsLists();
 
@@ -1520,29 +1507,11 @@ public class BoardScript : MonoBehaviour {
             }
 
             yield return new WaitForSeconds(selectWaitTime);
-
-            // // Clear visuals
-            //
-            // HighlightedPositions.Clear();
-            //
-            // List<Coroutine> fadeoutList = new();
-            // for (int i = 0; i < CircleShieldList.Count; i++) {
-            //     fadeoutList.Add(StartCoroutine(
-            //                         CircleShieldList[i].GetComponent<CircleHighlightScript>().FadeOutSequence()));
-            // }
-            //
-            // // EaseOutAllMoveboxes();
-            // yield return StartCoroutine(EaseOutAllMoveboxesAndWait());
-            //
-            // for (int i = 0; i < fadeoutList.Count; i++) {
-            //     yield return fadeoutList[i];
-            // }
-
+            
             // Deactivate ability to cancel move
-            _selectingMove = false;
+            SelectingMove = false;
 
-            yield return StartCoroutine(ClearAllVisualsAndWait());
-
+            yield return ClearAllVisualsAndWait();
 
             // Save the final selected move
             selectedSingleMove = narrowedSingleMoves.Count > 0 ? narrowedSingleMoves[0] : new();
@@ -1711,7 +1680,7 @@ public class BoardScript : MonoBehaviour {
 
         yield return new WaitUntil(() => MoveboxList.All(g => g == null));
 
-        Debug.Log("bababooey hahooey");
+        Debug.Log("moveboxes easing out");
     }
 
     IEnumerator DeleteCircleSpritesAndList() {
@@ -1724,6 +1693,13 @@ public class BoardScript : MonoBehaviour {
         CircleShieldList.Clear();
 
         yield break;
+    }
+
+    public void DestroyAllCircles() {
+        GameObject[] garbageList = GameObject.FindGameObjectsWithTag("Circle");
+        for (int i = 0; i < garbageList.Length; i++) {
+            Destroy(garbageList[i]);
+        }
     }
 
     IEnumerator ClearAllVisualsAndWait() {
@@ -1740,12 +1716,15 @@ public class BoardScript : MonoBehaviour {
         }
 
         // Wait for all moveboxes to clear out
-        yield return StartCoroutine(EaseOutAllMoveboxesAndWait());
+        yield return EaseOutAllMoveboxesAndWait();
 
         // Wait for all circle/shield items to clear out
         for (int i = 0; i < fadeoutList.Count; i++) {
             yield return fadeoutList[i];
         }
+
+        DestroyAllCircles();
+
     }
 
     private void ClearCirclePositionsLists() {

@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Board
   - Empty Square
+  - Circle
+  - Movebox
   layers:
   - Default
   - TransparentFX

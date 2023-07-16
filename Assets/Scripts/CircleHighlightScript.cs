@@ -115,9 +115,9 @@ public class CircleHighlightScript : MonoBehaviour {
             yield return new WaitForSeconds(fadeDeltaTime);
         }
 
-        if (gameObject != null) {
-            Destroy(gameObject);
-        }
+        // if (gameObject != null) {
+        //     Destroy(gameObject);
+        // }
     }
 
     public IEnumerator Destroy() {

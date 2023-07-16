@@ -141,7 +141,10 @@ public class SelectScript : MonoBehaviour {
 
 
     private void OnMouseDown() {
-        _boardScript.SelectedPositions.Add(Position);
+        if (BoardScript.SelectingMove) {
+            _boardScript.SelectedPositions.Add(Position);    
+        }
+        
 
         // if (!Input.GetKey(KeyCode.Space)) {
         // }
