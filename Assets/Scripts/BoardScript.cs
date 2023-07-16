@@ -84,7 +84,7 @@ public class BoardScript : MonoBehaviour {
 
     private GameObject[,] _board;
     // private List<bool[]> _boardStates;
-    private ButtonController.Mode _boardMode = ButtonController.Mode.None;
+    private ButtonController.Mode _boardMode = ButtonController.Mode.Play;
 
     private Dictionary<char, GameObject> _charPieceDict;
     private Dictionary<PieceScript.PieceType, char> _typeCharDict;
@@ -505,6 +505,9 @@ public class BoardScript : MonoBehaviour {
         while (true) {
             
             yield return new WaitUntil(() => ButtonController.ButtonMode != ButtonController.Mode.None);
+            if (_boardMode == ButtonController.ButtonMode) {
+                continue;
+            }
             _boardMode = ButtonController.ButtonMode;
             ButtonController.ButtonMode = ButtonController.Mode.None;
             
