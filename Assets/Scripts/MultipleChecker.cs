@@ -17,7 +17,7 @@ public class MultipleChecker : MonoBehaviour {
         Dictionary<Func<(int, int), (int, int), (bool, List<(int, int)>, List<(int, int)>)>,
             (List<PieceScript.PieceType>, List<PieceScript.PieceType>)> PieceIdentity = new() {
             {
-                PagesAndSquires,
+                TrojanHorse,
                 (new List<PieceScript.PieceType> {
                     PieceScript.PieceType.Knight
                 }, new List<PieceScript.PieceType> {
@@ -52,15 +52,20 @@ public class MultipleChecker : MonoBehaviour {
                 }, new List<PieceScript.PieceType> {
                     PieceScript.PieceType.King
                 })
+            }, {
+                BattlefieldCommandSelfNull,
+                (new List<PieceScript.PieceType> {
+                    PieceScript.PieceType.Pawn,
+                    PieceScript.PieceType.Rook,
+                    PieceScript.PieceType.Knight,
+                    PieceScript.PieceType.Queen,
+                    PieceScript.PieceType.Footmen
+                }, new List<PieceScript.PieceType> {
+                    PieceScript.PieceType.King
+                })
             }
         };
-
-    // public static List<string> SpecialFunctions = typeof(MultipleChecker)
-    //     .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
-    //     .Where(m => m.IsDefined(typeof(SpecialMoveAttribute)))
-    //     .Select(s => s.Name).ToList();
-
-
+    
     // Start is called before the first frame update
     void Start() {
         _board = GameObject.FindGameObjectWithTag("Board");
@@ -92,7 +97,7 @@ public class MultipleChecker : MonoBehaviour {
     /// <param name="pawnPosition"></param>
     /// <returns>3-long tuple. If there are/are not moves, possible knight final positions, possible pawn final positions</returns>
     [Move]
-    public static (bool, List<(int, int)>, List<(int, int)>) PagesAndSquires((int, int) knightPosition,
+    public static (bool, List<(int, int)>, List<(int, int)>) TrojanHorse((int, int) knightPosition,
         (int, int) pawnPosition) {
         // Checking that Knight and Pawn are in positions is responsibility of BoardScript
         // Also checking that Knight and Pawn are the same color
@@ -286,5 +291,12 @@ public class MultipleChecker : MonoBehaviour {
             Enumerable.Repeat(kingPosition, finalPiecePositions.Count).ToList(); // King remains stationary
 
         return (finalPiecePositions.Count > 0, finalPiecePositions, finalKingPositions);
+    }
+
+    [Move]
+    [SpecialMove]
+    public static (bool, List<(int, int)>, List<(int, int)>) BattlefieldCommandSelfNull((int, int) anyPosition,
+        (int, int) kingPosition) {
+        return BattlefieldCommandSelf(anyPosition, kingPosition);
     }
 }

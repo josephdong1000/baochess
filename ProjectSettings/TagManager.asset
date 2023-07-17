@@ -8,6 +8,7 @@ TagManager:
   - Empty Square
   - Circle
   - Movebox
+  - Editor Manager
   layers:
   - Default
   - TransparentFX

@@ -107,5 +107,5 @@ MonoBehaviour:
   attackSprite: {fileID: 21300000, guid: ebd784e04121843b1b2dabce7b2e9cf4, type: 3}
   rangedColor: {r: 1, g: 0.93333334, b: 0.8862745, a: 1}
   rangedSprite: {fileID: 21300000, guid: 14ed6627ef0614be285699c9a1ab233c, type: 3}
-  fadeSpeed: 1
+  fadeSpeed: 15
   fadeDeltaTime: 0.01

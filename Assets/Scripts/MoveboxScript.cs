@@ -33,13 +33,7 @@ public class MoveboxScript : MonoBehaviour {
     public static int HoveredItem;
     public static int SelectedItem;
     private static readonly float _hoverAnimationEpsilon = 0.01f;
-
-    private static readonly Dictionary<string, string> moveDescriptions = new() {
-        { "Coregency", "my balls be itching bro" },
-        { "Serfs Up", "yeah whatever the guy above me said tbh, not feeling that great lately" },
-        { "Cannon-ization", "this move sucks SO MUCH why don't the devs do something about it" }
-    };
-
+    
     // Start is called before the first frame update
     void Start() {
         _hovered = false;
@@ -96,7 +90,8 @@ public class MoveboxScript : MonoBehaviour {
     }
 
     IEnumerator ShowMoves() {
-        yield return new WaitUntil(() => MoveName is not null);
+        yield return new WaitUntil(() => MoveName is not null &&
+                                         MoveBoxTextScript.MoveDescriptionsPretty.ContainsKey(MoveName));
 
         DisplayMoveName(MoveName);
 
@@ -170,6 +165,11 @@ public class MoveboxScript : MonoBehaviour {
 
         _textMeshPro.text = $"<align=\"center\"><b>{spacedName}</b></align>\n";
         _textMeshPro.text +=
-            "<size=2px>badsf adsjfdsf aj fasdijf asdf ioajdfas this is some filler text about this really fun to learn about function!";
+            $"<size=2px>{MoveBoxTextScript.MoveDescriptionsPretty[moveName]}";
+
+        // Debug.Log(string.Join("\", \"\"},\n {\"", MoveList.AllMoveNames));
+
+
     }
+    
 }

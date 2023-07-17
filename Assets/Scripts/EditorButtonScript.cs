@@ -17,8 +17,8 @@ public class EditorButtonScript : MonoBehaviour {
     public static List<(PieceScript.PieceType, PieceScript.Side)> AllPieceTypes { get; private set; }
 
     private BoardScript _boardScript;
-    private SpriteRenderer _spriteRenderer;
-    private SpriteRenderer _childSpriteRenderer;
+    private SpriteRenderer _backgroundSpriteRenderer;
+    private SpriteRenderer _pieceSpriteRenderer;
 
 
     // Start is called before the first frame update
@@ -28,15 +28,19 @@ public class EditorButtonScript : MonoBehaviour {
         AllPieceTypes = BoardScript.TypePieceDict.Keys
             .Skip(1)
             .Select(s => (s, PieceScript.Side.White))
+            .Append((PieceScript.PieceType.Empty, PieceScript.Side.None))
             .Concat(BoardScript.TypePieceDict.Keys.Skip(1).Select(s => (s, PieceScript.Side.Black)))
             .Append((PieceScript.PieceType.Empty, PieceScript.Side.None))
             .ToList();
         // _editorButtons = new();
+        
+        // Debug.Log(string.Join(",", AllPieceTypes));
 
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-        _childSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        // _backgroundSpriteRenderer = GetComponent<SpriteRenderer>();
+        _pieceSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        _backgroundSpriteRenderer = transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>();
 
-        // _childSpriteRenderer.sprite = AllPieceTypes.IndexOf(thisPieceType) % 7
+        // _pieceSpriteRenderer.sprite = AllPieceTypes.IndexOf(thisPieceType) % 7
 
         // Debug.Log(string.Join(",", AllPieceTypes));
     }
@@ -52,22 +56,23 @@ public class EditorButtonScript : MonoBehaviour {
             return;
         }
 
-        if (thisPieceType.Item1 == PieceScript.PieceType.Empty) {
-            _childSpriteRenderer.sprite = spriteList.Last();
-        } else {
-            // Debug.Log(AllPieceTypes.IndexOf(thisPieceType));
-            // Debug.Log(AllPieceTypes.IndexOf(thisPieceType) % spriteList.Count);
+        
+        
 
-            _childSpriteRenderer.sprite = spriteList[AllPieceTypes.IndexOf(thisPieceType) % (spriteList.Count - 1)];
-            _childSpriteRenderer.color = thisPieceType.Item2 == PieceScript.Side.White
+        if (thisPieceType.Item1 == PieceScript.PieceType.Empty) {
+            _pieceSpriteRenderer.sprite = spriteList.Last();
+        } else {
+            _pieceSpriteRenderer.sprite = spriteList[AllPieceTypes.IndexOf(thisPieceType) % spriteList.Count];
+            // _pieceSpriteRenderer.sprite = spriteList[AllPieceTypes.IndexOf(thisPieceType) % (spriteList.Count - 1)];
+            _pieceSpriteRenderer.color = thisPieceType.Item2 == PieceScript.Side.White
                 ? _boardScript.whiteColor
                 : _boardScript.blackColor;
         }
 
         if (SelectedPieceType != thisPieceType) {
-            _spriteRenderer.color = unhighlightColor;
+            _backgroundSpriteRenderer.color = unhighlightColor;
         } else {
-            _spriteRenderer.color = highlightColor;
+            _backgroundSpriteRenderer.color = highlightColor;
         }
     }
 }

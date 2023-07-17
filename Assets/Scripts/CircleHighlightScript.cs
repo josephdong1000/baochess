@@ -106,12 +106,13 @@ public class CircleHighlightScript : MonoBehaviour {
     public IEnumerator FadeOutSequence() {
         Color defaultColor = _spriteRenderer.color;
         float alpha = 1;
+
         while (alpha > 0 && _spriteRenderer != null) {
+            alpha -= fadeSpeed * fadeDeltaTime;
             _spriteRenderer.color = new Color(defaultColor.r,
                                               defaultColor.g,
                                               defaultColor.b,
                                               alpha);
-            alpha -= fadeSpeed * fadeDeltaTime;
             yield return new WaitForSeconds(fadeDeltaTime);
         }
 

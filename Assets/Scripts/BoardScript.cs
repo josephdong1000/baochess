@@ -17,6 +17,7 @@ public class BoardScript : MonoBehaviour {
     public GameObject footmenPrefab;
     public GameObject emptySquare;
     public GameObject boardSquare;
+    public GameObject boardCoordinate;
     public GameObject circleHighlightPrefab;
     public GameObject movebox2Prefab;
     public GameObject movebox3Prefab;
@@ -78,13 +79,14 @@ public class BoardScript : MonoBehaviour {
     public void AddDeleteList(GameObject go) => DeleteList.Add(go);
     public float MoveboxesHeight { get; private set; }
     public static bool SelectingMove;
-    private string _selectedMoveName;
+    public static string SelectedMoveName;
+    public static bool[] BanningMoveFlags;
     private Dictionary<PieceScript.Side, int> _extraMoves;
-    private Dictionary<(string, PieceScript.Side), int> _bannedMoves;
+    private Dictionary<(string, PieceScript.Side), bool> _bannedMoves;
 
     private GameObject[,] _board;
-    // private List<bool[]> _boardStates;
-    private ButtonController.Mode _boardMode = ButtonController.Mode.Play;
+
+    public ButtonController.Mode BoardMode { get; private set; }
 
     private Dictionary<char, GameObject> _charPieceDict;
     private Dictionary<PieceScript.PieceType, char> _typeCharDict;
@@ -164,16 +166,18 @@ public class BoardScript : MonoBehaviour {
         FinalProtectedPositions = new();
         MoveNames = new();
         SelectingMove = false;
+        SelectedMoveName = "";
+        BanningMoveFlags = new bool[RepeatMovesScript.BanningMovesDict.Count];
         _extraMoves = new() {
             { PieceScript.Side.White, 0 },
             { PieceScript.Side.Black, 0 }
         };
         _bannedMoves = MoveList.AllMoveNames
-            .ToDictionary(s => (s, PieceScript.Side.White), _ => 0)
-            .Concat(MoveList.AllMoveNames.ToDictionary(s => (s, PieceScript.Side.Black), _ => 0))
+            .ToDictionary(s => (s, PieceScript.Side.White), _ => false)
+            .Concat(MoveList.AllMoveNames.ToDictionary(s => (s, PieceScript.Side.Black), _ => false))
             .ToDictionary(e => e.Key, e => e.Value);
         _editingBoard = false;
-        // _boardStates = new();
+        BoardMode = ButtonController.Mode.Play;
         _charPieceDict = new Dictionary<char, GameObject>() {
             { ' ', null },
             { 'p', pawnPrefab },
@@ -219,13 +223,13 @@ public class BoardScript : MonoBehaviour {
         }
 
         _exitUpdate = true;
-        
+
         _board ??= new GameObject[boardSize, boardSize];
         HighlightBoard ??= new GameObject[boardSize, boardSize];
 
         ClearBoard();
         PopulateBoard();
-        BoardStateScript.StoreBoardState(_board, PlayingSide);
+        // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
         InstantiateHighlightBoard(); // Cosmetic
         UpdatePieceGameObjectPositions(); // Cosmetic
 
@@ -235,13 +239,12 @@ public class BoardScript : MonoBehaviour {
         _checkResetSelection = CheckResetSelection(KeyCode.R);
         StartCoroutine(_checkResetSelection);
 
-
-        // _board = BoardStateScript.BoolsToBoard(BoardStateScript.BoardToBools(_board, PlayingSide)).Item1;
         // PrintBoard();
     }
 
     IEnumerator UpdateGameLoop() {
         SelectingMove = false;
+        StopCoroutine(nameof(UpdateGameLoop));
 
         FetchMoveNames();
 
@@ -269,31 +272,40 @@ public class BoardScript : MonoBehaviour {
             yield return SelectMove();
             SelectingMove = false;
 
-            yield return MovePieces();
+            // Store the state of the board before the move is executed.
+            // This will also store every board state for a multi-move turn
+            BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
 
             // Final checks
-            UpdateBannedTurns();
+            UpdateBanningMoveFlags(SelectedMoveName);
+            DeactivateBannedMovesSafely(moveName: SelectedMoveName);
             CheckExtraMove();
+
+
+            // if (_extraMoves[PlayingSide] == 0) {
+            // }
+
+
+            // Move pieces
+            yield return MovePieces();
             UpdateAutomaticMoves();
-            
+
             // Update visuals and piece data
             UpdatePiecePositions();
             UpdatePieceProperties(PlayingSide);
             DeletePieces();
             UpdatePieceGameObjectPositions();
 
-            
+            // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
+
             if (_extraMoves[PlayingSide] > 0) {
                 _extraMoves[PlayingSide] -= 1;
             } else {
+                ResetPlayingSideBannedMoves();
+                ResetBanningMoveFlags();
                 SwitchPlayers();
-                BoardStateScript.StoreBoardState(_board, PlayingSide); // Update undo move stack
             }
-
-            // PrintBoard(showAttack: true, showProtect: true);
         }
-
-        Debug.Log("Yippee");
     }
 
     public void UpdateBoardTemplate() {
@@ -381,6 +393,14 @@ public class BoardScript : MonoBehaviour {
                                                    PositionToVector3((i, j)),
                                                    quaternion.identity);
                 HighlightBoard[i, j].GetComponent<SelectScript>().Position = (i, j);
+                if (i == 0) {
+                    var boardcoord = Instantiate(boardCoordinate, HighlightBoard[i, j].transform);
+                    boardcoord.GetComponent<BoardCoordinateScript>().InitToBoardSquare(HighlightBoard[i, j], true);
+                }
+                if (j == 0) {
+                    var boardcoord = Instantiate(boardCoordinate, HighlightBoard[i, j].transform);
+                    boardcoord.GetComponent<BoardCoordinateScript>().InitToBoardSquare(HighlightBoard[i, j], false);
+                }
             }
         }
     }
@@ -501,27 +521,30 @@ public class BoardScript : MonoBehaviour {
     // WIP
     IEnumerator ToggleButtonModes() {
         IEnumerator editBoardLoop = EditBoardLoop();
-        
+
         while (true) {
-            
             yield return new WaitUntil(() => ButtonController.ButtonMode != ButtonController.Mode.None);
-            if (_boardMode == ButtonController.ButtonMode) {
+
+            if (BoardMode == ButtonController.ButtonMode) {
                 continue;
             }
-            _boardMode = ButtonController.ButtonMode;
+
+            if (BoardMode == ButtonController.Mode.Edit
+                && ButtonController.ButtonMode == ButtonController.Mode.Undo) {
+                continue; // Eventually, replace with an undo board changes button
+            }
+
+            BoardMode = ButtonController.ButtonMode;
             ButtonController.ButtonMode = ButtonController.Mode.None;
-            
-            
-            // yield return new WaitUntil(() => Input.GetKeyDown(keyCode));
-            _editingBoard = !_editingBoard;
-            if (_editingBoard) {
+
+            if (BoardMode == ButtonController.Mode.Edit) {
                 StopCoroutine(_checkResetSelection);
                 StopCoroutine(_updateGameLoop);
                 StopCoroutine(nameof(UpdateGameLoop));
                 StopCoroutine(nameof(SelectMove));
                 StopCoroutine(nameof(MovePieces));
                 yield return ClearAllVisualsAndWait();
-                
+
                 Debug.Log("wiping board and preparing edit");
 
                 // Wipe board
@@ -531,20 +554,21 @@ public class BoardScript : MonoBehaviour {
                 UpdatePieceGameObjectPositions();
 
                 // Instantiate buttons
-                GetComponent<EditorButtonManager>().InstantiateEditorButtons();
+                GameObject.FindGameObjectWithTag("Editor Manager").GetComponent<EditorButtonManager>()
+                    .InstantiateEditorButtons();
 
                 Debug.Log("ready to edit");
 
                 StartCoroutine(editBoardLoop);
-            } else { // Done editing board
-
+            } else if (BoardMode == ButtonController.Mode.Play) {
                 Debug.Log("exiting board edit");
 
                 StopCoroutine(editBoardLoop);
                 editBoardLoop = EditBoardLoop();
 
-                // Erase buttons
-                GetComponent<EditorButtonManager>().ClearAllButtons();
+                // Erase edit buttons
+                GameObject.FindGameObjectWithTag("Editor Manager").GetComponent<EditorButtonManager>()
+                    .ClearAllButtons();
                 // Consolidate board edits into char dict
                 for (int i = 0; i < boardSize; i++) {
                     for (int j = 0; j < boardSize; j++) {
@@ -560,14 +584,16 @@ public class BoardScript : MonoBehaviour {
                 InstantiateHighlightBoard();
                 UpdatePieceGameObjectPositions();
 
-                // Reset extraMoves and bannedMoves
+                // Reset all extraMoves and bannedMoves
                 _extraMoves = new() {
                     { PieceScript.Side.White, 0 },
                     { PieceScript.Side.Black, 0 }
                 };
                 for (int i = 0; i < _bannedMoves.Count; i++) {
-                    _bannedMoves[_bannedMoves.ElementAt(i).Key] = 0;
+                    _bannedMoves[_bannedMoves.ElementAt(i).Key] = false;
                 }
+
+                ResetBanningMoveFlags();
 
                 _checkResetSelection = CheckResetSelection(KeyCode.R);
                 StartCoroutine(_checkResetSelection);
@@ -580,9 +606,45 @@ public class BoardScript : MonoBehaviour {
                 Debug.Log("done resetting gameloop");
 
                 yield return new WaitForSeconds(0.05f); // Hardcoded cooldown
-            }
+            } else if (BoardMode == ButtonController.Mode.Undo) {
+                if (BoardStateScript.BoardStates.Count > 0) {
+                    ClearBoard(board: true, highlightBoard: false);
 
-            // yield return new WaitUntil(() => Input.GetKeyUp(keyCode));
+                    var (gameObjects, side, banSpecialNext) = BoardStateScript.PopBoardState();
+                    _board = gameObjects;
+                    PlayingSide = side;
+                    BanningMoveFlags = banSpecialNext;
+
+                    // InstantiateHighlightBoard();
+                    UpdatePieceGameObjectPositions();
+
+                    // Reset all extraMoves and bannedMoves
+                    _extraMoves = new() {
+                        { PieceScript.Side.White, 0 },
+                        { PieceScript.Side.Black, 0 }
+                    };
+                    for (int i = 0; i < _bannedMoves.Count; i++) {
+                        _bannedMoves[_bannedMoves.ElementAt(i).Key] = false;
+                    }
+
+                    for (int i = 0; i < banSpecialNext.Length; i++) {
+                        if (banSpecialNext[i]) {
+                            DeactivateBannedMoves(RepeatMovesScript.BanningMovesDict.ElementAt(i).Key);
+                        }
+                    }
+                    // ResetBanningMoveFlags();
+
+                    Debug.Log(string.Join(", ", _bannedMoves));
+
+                    // Clear visuals and reset game loop
+                    yield return StartCoroutine(ResetGameLoop());
+                }
+
+                yield return new WaitForSeconds(0.01f); // Hardcoded cooldown
+                BoardMode = ButtonController.Mode.Play;
+            } else {
+                throw new Exception("No actual mode selected");
+            }
         }
     }
 
@@ -838,6 +900,12 @@ public class BoardScript : MonoBehaviour {
 
                                     if (isMoveValid) { // # of valid moves > 0
                                         for (int m = 0; m < validPositionA.Count; m++) {
+                                            // Skip if either of the targeted positions are outside the board
+                                            // if (IsOutsideBoard(validPositionA[m]) ||
+                                            //     IsOutsideBoard(validPositionB[m])) {
+                                            //     continue;
+                                            // }
+
                                             // Iterate over all valid moves (2 pairs of positions)
                                             MultiplePiecePositions.Add(new List<((int, int), (int, int))> {
                                                 (piecePositionA, validPositionA[m]), // where piece A goes
@@ -1205,6 +1273,11 @@ public class BoardScript : MonoBehaviour {
 
                                     if (isMoveValid) { // # of valid moves > 0
                                         for (int m = 0; m < validPositionA.Count; m++) {
+                                            // if (IsOutsideBoard(validPositionA[m]) ||
+                                            //     IsOutsideBoard(validPositionB[m])) {
+                                            //     continue;
+                                            // }
+
                                             // Iterate over all valid moves (2 pairs of positions)
                                             MultiplePiecePositions.Add(new List<((int, int), (int, int))> {
                                                 (piecePositionA, validPositionA[m]), // where piece A goes
@@ -1376,7 +1449,9 @@ public class BoardScript : MonoBehaviour {
 
                         SelectingMove = false;
                         yield return StartCoroutine(ResetGameLoop());
-                        
+                        yield break;
+                        Debug.Log("what the");
+
                         // if (_selectingMove) {
                         //     yield return StartCoroutine(ResetGameLoop());
                         // }
@@ -1385,11 +1460,14 @@ public class BoardScript : MonoBehaviour {
                     } else if (!pickMove && MoveboxScript.SelectedItem != -1) {
                         pickMove = true;
                         deltaPick[0] = true;
-                        Debug.Log("bingbong");
+                        Debug.Log("a move has been picked");
+                        // Debug.Log();
                         break;
                     } else {
                         throw new NotImplementedException("what did you do lol");
                     }
+
+                    Debug.Log("this area of the code should have not been reached");
                 }
 
                 choicesPicked++;
@@ -1510,7 +1588,7 @@ public class BoardScript : MonoBehaviour {
             }
 
             yield return new WaitForSeconds(selectWaitTime);
-            
+
             // Deactivate ability to cancel move
             SelectingMove = false;
 
@@ -1520,7 +1598,7 @@ public class BoardScript : MonoBehaviour {
             selectedSingleMove = narrowedSingleMoves.Count > 0 ? narrowedSingleMoves[0] : new();
             selectedMultipleMove = narrowedMultipleMoves.Count > 0 ? narrowedMultipleMoves[0] : new();
 
-            _selectedMoveName = narrowedSingleMoves.Count > 0
+            SelectedMoveName = narrowedSingleMoves.Count > 0
                 ? narrowedSingleMoves[0].Item4
                 : narrowedMultipleMoves[0].Item3;
 
@@ -1705,6 +1783,13 @@ public class BoardScript : MonoBehaviour {
         }
     }
 
+    public void DestroyAllMoveboxes() {
+        GameObject[] garbageList = GameObject.FindGameObjectsWithTag("Movebox");
+        for (int i = 0; i < garbageList.Length; i++) {
+            Destroy(garbageList[i]);
+        }
+    }
+
     IEnumerator ClearAllVisualsAndWait() {
         // Clear out highlighted positions
         HighlightedPositions.Clear();
@@ -1727,7 +1812,7 @@ public class BoardScript : MonoBehaviour {
         }
 
         DestroyAllCircles();
-
+        DestroyAllMoveboxes();
     }
 
     private void ClearCirclePositionsLists() {
@@ -1857,45 +1942,76 @@ public class BoardScript : MonoBehaviour {
         }
     }
 
-    public void UpdateBannedTurns() {
-        // Decrement all banned turn counters
-        for (int i = 0; i < _bannedMoves.Count; i++) {
-            var (bannedMove, bannedTurns) = _bannedMoves.ElementAt(i);
-            if (bannedMove.Item2 == PlayingSide) {
-                _bannedMoves[bannedMove] = Math.Max(0, bannedTurns - 1);
-            }
-        }
-
-        // foreach (var (bannedMove, bannedTurns) in _bannedMoves) {
-        //     _bannedMoves[bannedMove] = Math.Max(0, bannedTurns - 1);
-        // }
+    /// <summary>
+    /// Given any move name, deactivate the moves the banning move bans
+    /// </summary>
+    /// <param name="moveName">If null, use the SelectedMoveName</param>
+    /// <exception cref="NotImplementedException"></exception>
+    public void DeactivateBannedMovesSafely(string moveName = null) {
+        moveName ??= SelectedMoveName;
 
         // Add to ban list
-        if (RepeatMovesScript.BanningMovesDict.Keys.Contains(_selectedMoveName)) {
-            Dictionary<(string, bool), int> bannedDict = RepeatMovesScript.BanningMovesDict[_selectedMoveName];
-            foreach (var (bannedMove, bannedTurns) in bannedDict) {
-                _bannedMoves[(bannedMove.Item1,
-                              bannedMove.Item2
-                                  ? InvertSide(PlayingSide)
-                                  : PlayingSide)]
-                    += bannedTurns;
+        if (RepeatMovesScript.BanningMovesDict.Keys.Contains(moveName)) {
+            DeactivateBannedMoves(moveName);
+        }
+    }
+
+    /// <summary>
+    /// Reset all banned/bannable moves to false for the playing side
+    /// </summary>
+    public void ResetPlayingSideBannedMoves() {
+        for (int i = 0; i < _bannedMoves.Count; i++) {
+            var (bannedMove, isBanned) = _bannedMoves.ElementAt(i);
+            if (bannedMove.Item2 == PlayingSide) {
+                _bannedMoves[bannedMove] = false;
+                // _bannedMoves[bannedMove] = Math.Max(0, isBanned - 1);
             }
         }
+    }
+
+    /// <summary>
+    /// Given a valid banning move name, deactivate the moves the banning move bans
+    /// </summary>
+    /// <param name="moveName"></param>
+    public void DeactivateBannedMoves(string moveName) {
+        // Must be a valid bannable move name
+        Dictionary<(string, bool), bool> bannedDict = RepeatMovesScript.BanningMovesDict[moveName];
+        foreach (var (bannedMove, isBanned) in bannedDict) {
+            _bannedMoves[(bannedMove.Item1,
+                          bannedMove.Item2
+                              ? InvertSide(PlayingSide)
+                              : PlayingSide)]
+                = true;
+            // |= isBanned;
+        }
+    }
+
+    /// <summary>
+    /// Given any move name, check if it is a banning move. If yes, update the corresponding banning move flag
+    /// </summary>
+    /// <param name="moveName"></param>
+    public void UpdateBanningMoveFlags(string moveName) {
+        if (RepeatMovesScript.BanningMovesDict.ContainsKey(moveName)) {
+            BanningMoveFlags[RepeatMovesScript.BanningMovesDict.Keys.ToList().IndexOf(moveName)] = true;
+        }
+    }
+
+    /// <summary>
+    /// Reset the banning move flags to all false
+    /// </summary>
+    public void ResetBanningMoveFlags() {
+        BanningMoveFlags = new bool[RepeatMovesScript.BanningMovesDict.Count];
     }
 
     public bool InBanList(string moveName, PieceScript.Side playingSide = PieceScript.Side.None) {
-        // if (playingSide == PieceScript.Side.None) {
-        //     return _bannedMoves[(moveName, PlayingSide)] > 0;
-        // }
-
         return _bannedMoves[(moveName, playingSide == PieceScript.Side.None
                                  ? PlayingSide
-                                 : playingSide)] > 0;
+                                 : playingSide)];
     }
 
     public void CheckExtraMove() {
-        if (RepeatMovesScript.ExtraMovesDict.Keys.Contains(_selectedMoveName)) {
-            _extraMoves[PlayingSide] += RepeatMovesScript.ExtraMovesDict[_selectedMoveName];
+        if (RepeatMovesScript.ExtraMovesDict.Keys.Contains(SelectedMoveName)) {
+            _extraMoves[PlayingSide] += RepeatMovesScript.ExtraMovesDict[SelectedMoveName];
         }
     }
 
@@ -2057,12 +2173,6 @@ public class BoardScript : MonoBehaviour {
             }
 
             currentAdjacent = new HashSet<(int, int)>(nextAdjacent);
-
-            // foreach ((int, int) i in nextAdjacent) {
-            //     if (!IsOutsideBoard(i.Item1, i.Item2)) {
-            //         currentAdjacent.Add(i);
-            //     }
-            // }
 
             nextAdjacent.Clear();
         }

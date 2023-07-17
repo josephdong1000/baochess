@@ -12,7 +12,8 @@ public class KingScript : PieceScript {
             KingMove
         };
         SelfCaptureFunctions = new() {
-            SwordInTheStone
+            SwordInTheStone,
+            SwordInTheStoneNull
         };
         ProtectFunctions = new() {
         };
@@ -44,18 +45,14 @@ public class KingScript : PieceScript {
 
     [Move]
     public bool KingMove((int, int) move) {
+        
         if (!MoveDict["move"].Contains(move)) {
             return false;
         }
 
-
         // Can capture any enemy piece or move to empty square
         return BoardScript.IsEmptySquare(Position, move) ||
                BoardScript.IsEnemy(Position, move, PieceSide);
-
-
-        // return BoardScript.IsEmptySquare(Position, move) ||
-        //        BoardScript.IsEnemy(Position, move, PieceSide);
     }
 
     [Move]
@@ -68,6 +65,12 @@ public class KingScript : PieceScript {
         // Can capture any friendly piece except for friendly king with Sword in the Stone
         return !BoardScript.IsEnemy(Position, move, PieceSide) &&
                BoardScript.GetPieceType(Position, move) != PieceType.King;
+    }
+
+    [Move]
+    [SpecialMove]
+    public bool SwordInTheStoneNull((int, int) move) {
+        return SwordInTheStone(move);
     }
 
     [Move]

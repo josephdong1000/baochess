@@ -11,7 +11,7 @@ public class RepeatMovesScript : MonoBehaviour {
     /// <para>Given a move, return a Dictionary of subsequent moves that it bans.</para>
     /// <para>Banned dictionary says how long the banned move & if enemy (string, bool) is banned for (value, # turns)</para>
     /// </summary>
-    public static Dictionary<string, Dictionary<(string, bool), int>> BanningMovesDict;
+    public static Dictionary<string, Dictionary<(string, bool), bool>> BanningMovesDict;
 
     /// <summary>
     /// Given a move (key) that grants extra moves, return how many moves it grants (value)
@@ -20,10 +20,11 @@ public class RepeatMovesScript : MonoBehaviour {
 
     private static BoardScript _boardScript;
     private static List<string> _allMoveNames;
-
+    private static Dictionary<(string, bool), bool> _swordInTheStoneDictSelfEnemy;
+    private static Dictionary<(string, bool), bool> _swordInTheStoneDictEnemy;
 
     // Start is called before the first frame update
-    void Start() {
+    void Awake() {
         // _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
 
         ExtraMovesDict = new() {
@@ -32,29 +33,33 @@ public class RepeatMovesScript : MonoBehaviour {
             { "SwordInTheStone", 1 },
             { "BattlefieldCommandSelf", 1 },
         };
+        
+        _swordInTheStoneDictEnemy = MoveList.AllSpecialMoveNames
+            .ToDictionary(s => (s, true), _ => true)
+            .ToDictionary(e => e.Key, e => e.Value);
+
+        
+        _swordInTheStoneDictSelfEnemy = MoveList.InvertMoveSelection(MoveList.GetAllMoves(typeof(KingScript)))
+            .Append("SwordInTheStone")
+            .Append("SwordInTheStoneNull")
+            // .Append("BattlefieldCommandSelf") // Already included
+            .ToDictionary(s => (s, false), _ => true)
+            .Concat(MoveList.AllSpecialMoveNames.ToDictionary(s => (s, true), _ => true))
+            .ToDictionary(e => e.Key, e => e.Value);
 
         BanningMovesDict = new() {
             {
                 "CoregencyRevert", MoveList.GetAllMoves(typeof(QueenScript))
-                    .ToDictionary(s => (s, false), _ => 1)
+                    .ToDictionary(s => (s, false), _ => true)
             }, {
-                "SwordInTheStone",
-                MoveList.InvertMoveSelection(MoveList.GetAllMoves(typeof(KingScript)))
-                    .Append("SwordInTheStone")
-                    // .Append("BattlefieldCommandSelf") // Already included
-                    .ToDictionary(s => (s, false), _ => 1)
-                    .Concat(MoveList.AllSpecialMoveNames.ToDictionary(s => (s, true), _ => 1))
-                    .ToDictionary(e => e.Key, e => e.Value)
+                "SwordInTheStone", _swordInTheStoneDictSelfEnemy
             }, {
-                "BattlefieldCommandSelf",
-                MoveList.InvertMoveSelection(MoveList.GetAllMoves(typeof(KingScript)))
-                    .Append("SwordInTheStone")
-                    // .Append("BattlefieldCommandSelf")
-                    .ToDictionary(s => (s, false), _ => 1)
-                    .Concat(MoveList.AllSpecialMoveNames.ToDictionary(s => (s, true), _ => 1))
-                    .ToDictionary(e => e.Key, e => e.Value)
+                "BattlefieldCommandSelf", _swordInTheStoneDictSelfEnemy
+            }, {
+                "SwordInTheStoneNull", _swordInTheStoneDictEnemy
+            }, {
+                "BattlefieldCommandSelfNull", _swordInTheStoneDictEnemy
             }
         };
-
     }
 }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7645650259860417256}
   - component: {fileID: 1156564982251037431}
   - component: {fileID: 3578027561182182846}
-  - component: {fileID: 6255352174489482604}
+  - component: {fileID: 4142701246791867503}
   m_Layer: 0
   m_Name: Board
   m_TagString: Board
@@ -58,6 +58,7 @@ MonoBehaviour:
   footmenPrefab: {fileID: 4186747628876007229, guid: d7bdd87bd4c8044baa8b8f9fb0b0d8bc, type: 3}
   emptySquare: {fileID: 6660748383338984945, guid: 4b2e298a41b044aa1af5f744d22255b3, type: 3}
   boardSquare: {fileID: 5201485823728202865, guid: 5718e0cfb560c477f95cf41cf7cb137f, type: 3}
+  boardCoordinate: {fileID: 1934396874463144901, guid: d9ac5a23559e24fbdabff092198a47aa, type: 3}
   circleHighlightPrefab: {fileID: 5240227697339225924, guid: 5062a03fe83434eb7bc8ed42e9e90efa, type: 3}
   movebox2Prefab: {fileID: 2414531524402497538, guid: 675a5dca649df4ed28cc690d95ca3617, type: 3}
   movebox3Prefab: {fileID: 1656262625849398571, guid: 45b99c03cfa7140cf89b8b657a04c5f3, type: 3}
@@ -103,7 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17aa26d34e6514e068dd6fd583348313, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6255352174489482604
+--- !u!114 &4142701246791867503
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -112,9 +113,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 6255352175695983535}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c834dab8ebe304a8fbc85f2e43668e6b, type: 3}
+  m_Script: {fileID: 11500000, guid: a18447e17135e4c2da8c17fde8b838fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editorButtonPrefab: {fileID: 4499426676131127982, guid: 92dfe26faa7b54db18822ff0be776956, type: 3}
-  topLeftPosition: {x: 9, y: 7, z: 0}
-  buttonSpacing: 1.25

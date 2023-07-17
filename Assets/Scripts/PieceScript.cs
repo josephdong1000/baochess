@@ -8,7 +8,7 @@ public class PieceScript : MonoBehaviour {
     public virtual PieceType Type { get; }
     public Side PieceSide { get; set; }
     protected List<(PieceType, Side)> FriendlyPieces;
-    public int MoveCounter { get; protected set; }
+    public int MoveCounter { get; set; }
     public void IncrementMoveCounter() => MoveCounter++; // USE THIS FUNCTION
     public int TurnsOnBoard { get; protected set; }
     public void IncrementTurnsOnBoardCounter() => TurnsOnBoard++;
@@ -145,8 +145,8 @@ public class PieceScript : MonoBehaviour {
         Board = GameObject.FindGameObjectWithTag("Board");
         BoardScript = Board.GetComponent<BoardScript>();
         BoardSize = BoardScript.boardSize;
-        MoveCounter = 0;
-        TurnsOnBoard = 0;
+        // MoveCounter = 0;
+        // TurnsOnBoard = 0;
         Promoted = false; // Override if a promoted pawn
         // WhiteColor = BoardScript.whiteColor;
         // BlackColor = BoardScript.blackColor;
