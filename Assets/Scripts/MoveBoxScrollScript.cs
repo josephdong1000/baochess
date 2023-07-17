@@ -13,20 +13,20 @@ public class MoveBoxScrollScript : MonoBehaviour {
     public static float ScrollPercent;
     private static float _lastMousePercent;
     private static float _timeOfLastHover;
-    private float _xThresholdScreen;
+    private float _xThresholdScreenProportion;
 
     // Start is called before the first frame update
     void Start() {
         ScrollPercent = 0;
         // _xThreshold = transform.position.x;
-        _xThresholdScreen = Camera.main.WorldToScreenPoint(transform.position).x;
+        _xThresholdScreenProportion = Camera.main.WorldToScreenPoint(transform.position).x / Screen.width;
         StartCoroutine(UpdateScrollPercent());
         // StartCoroutine(CheckMouseInRegion());
     }
 
     // Update is called once per frame
     void Update() {
-        if (Input.mousePosition.x < _xThresholdScreen) {
+        if (Input.mousePosition.x / Screen.width < _xThresholdScreenProportion) {
             float lastMouseY = Mathf.Clamp(Input.mousePosition.y, yMargin, Screen.height - yMargin);
             _lastMousePercent = 1 - (lastMouseY - yMargin) / (Screen.height - 2 * yMargin);
             _timeOfLastHover = Time.time;

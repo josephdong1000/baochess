@@ -237,7 +237,7 @@ MonoBehaviour:
   yMargin: 75
   moveSpeed: 0.9999
   moveDeltaTime: 0.01
-  resetPositionCooldown: 2
+  resetPositionCooldown: 1.5
 --- !u!4 &392843127
 Transform:
   m_ObjectHideFlags: 0
