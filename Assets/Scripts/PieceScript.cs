@@ -21,7 +21,7 @@ public class PieceScript : MonoBehaviour {
     public static Color WhiteColor;
     public static Color BlackColor;
 
-    private bool debugMode = false;
+    // private bool debugMode = false;
 
     /// <summary>
     /// Runs at the end of the player's turn. Includes things like piece self-deletion (Footmen)
@@ -140,8 +140,7 @@ public class PieceScript : MonoBehaviour {
     }
 
 
-    // Start is called before the first frame update
-    public void Start() {
+    protected void Awake() {
         Board = GameObject.FindGameObjectWithTag("Board");
         BoardScript = Board.GetComponent<BoardScript>();
         BoardSize = BoardScript.boardSize;
@@ -159,7 +158,11 @@ public class PieceScript : MonoBehaviour {
         //     AttackReplaceFunctions,
         //     PassiveReplaceFunctions
         // };
-        // SetSpriteSide();
+        
+    }
+
+    protected void Start() {
+        SetSpriteSide();
     }
 
     public void SetSpriteSide() {
@@ -171,10 +174,10 @@ public class PieceScript : MonoBehaviour {
             sp.sprite = babaSprite;
 
             if (PieceSide == Side.White) {
-                sp.sprite = debugMode ? whiteSprite : babaSprite;
+                // sp.sprite = babaSprite;
                 sp.color = WhiteColor;
             } else {
-                sp.sprite = debugMode ? blackSprite : babaSprite;
+                // sp.sprite = debugMode ? blackSprite : babaSprite;
                 sp.color = BlackColor;
             }
         }
@@ -226,14 +229,6 @@ public class PieceScript : MonoBehaviour {
         AttackedBy.Add((enemyPiece, moveName));
     }
 
-    // public void AttackListRemove(GameObject enemyPiece, string moveName) {
-    //     AttackedBy.Remove((enemyPiece, moveName));
-    // }
-
-    // public void AttackListClear() {
-    //     AttackedBy.Clear();
-    // }
-
     protected void CheckInvertDirection() {
         if (PieceSide == Side.Black) { // Reverse movement direction for black
             foreach (KeyValuePair<string, List<(int, int)>> keyValuePair in MoveDict) {
@@ -253,16 +248,6 @@ public class PieceScript : MonoBehaviour {
     public (int, int) AddMove((int, int) move) {
         return (Position.Item1 + move.Item1, Position.Item2 + move.Item2);
     }
-
-    // /// <summary>
-    // /// Add position and move and return the sum
-    // /// </summary>
-    // /// <param name="position"></param>
-    // /// <param name="move"></param>
-    // /// <returns>Position + move</returns>
-    // public (int, int) AddMovePositions((int, int) position, (int, int) move) {
-    //     return (position.Item1 + move.Item1, position.Item2 + move.Item2);
-    // }
 
     protected void GetFriendlyPieces() {
         FriendlyPieces ??= new List<(PieceType, Side)>();

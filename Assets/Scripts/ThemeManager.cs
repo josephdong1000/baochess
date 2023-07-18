@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class ThemeManager : MonoBehaviour {
@@ -7,6 +8,10 @@ public class ThemeManager : MonoBehaviour {
     public enum Theme {
         Classic,
         Baba,
+    }
+
+    public void Start() {
+        CurrentTheme = Theme.Baba;
     }
 
 

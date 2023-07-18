@@ -45,22 +45,23 @@ public class CircleHighlightScript : MonoBehaviour {
         Ranged,
     }
 
-
-    // public CircleHighlightScript() {
-    // }
-
-    // Start is called before the first frame update
-    void Start() {
+    private void Awake() {
         _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
         _multiplePairPositions = _boardScript.MultiplePairPositions;
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        // _defaultColor = _spriteRenderer.color;
-        StartCoroutine(SetSpriteType(thisSpriteType));
     }
 
 
-    IEnumerator SetSpriteType(SpriteType spriteType) {
-        yield return new WaitUntil(() => thisSpriteType != SpriteType.None);
+    private void Start() {
+        
+        // StartCoroutine(SetSpriteType(thisSpriteType));
+
+        SetSpriteType(thisSpriteType);
+    }
+
+
+    public void SetSpriteType(SpriteType spriteType) {
+        // yield return new WaitUntil(() => thisSpriteType != SpriteType.None);
 
         if (spriteType == SpriteType.Cirle) {
             _spriteRenderer.sprite = circleSprite;

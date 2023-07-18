@@ -4,40 +4,58 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class TextHandler : MonoBehaviour {
 
     [HideInInspector] public TMP_FontAsset babaFont;
     [HideInInspector] public float babaFontScale; // Multiplier off base font size
+    [HideInInspector] public float babaLineSpacingOffset;
+    
     [HideInInspector] public TMP_FontAsset classicFont;
     [HideInInspector] public float classicFontScale;
+    [HideInInspector] public float classicLineSpacingOffset;
 
     private float _initFontSize;
     private ThemeManager.Theme _myTheme;
-    private TextMeshPro _textMeshPro;
+    private TMP_Text _tmpText;
 
 
     // Start is called before the first frame update
     void Start() {
-        _textMeshPro = GetComponent<TextMeshPro>();
-        _initFontSize = _textMeshPro.fontSize;
+        _tmpText = GetComponent<TMP_Text>();
+        _initFontSize = _tmpText.fontSize;
+        _myTheme = ThemeManager.Theme.Baba;
 
-        babaFont = Resources.Load<TMP_FontAsset>("Assets/Fonts/MedievalSharp-Regular SDF.asset");
+        babaFont = Resources.Load<TMP_FontAsset>("Fonts/MedievalSharp-Regular SDF");
         babaFontScale = 1;
-        classicFont = Resources.Load<TMP_FontAsset>("Assets/Fonts/EBGaramond-VariableFont_wght SDF.asset");
+        babaLineSpacingOffset = 0;
+        classicFont = Resources.Load<TMP_FontAsset>("Fonts/EBGaramond-VariableFont_wght SDF");
         classicFontScale = 1;
+        classicLineSpacingOffset = -15;
+
+
+        // Debug.Log(classicFont);
+        // Debug.Log(babaFont);
+
     }
 
     private void LateUpdate() {
+
+        // Debug.Log(_tmpText);
         if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
             _myTheme != ThemeManager.Theme.Classic) {
-            _textMeshPro.font = classicFont;
-            _textMeshPro.fontSize = _initFontSize * classicFontScale;
+            _tmpText.font = classicFont;
+            _tmpText.fontSize = _initFontSize * classicFontScale;
+            _tmpText.lineSpacing = classicLineSpacingOffset;
+            
             _myTheme = ThemeManager.CurrentTheme;
         } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
                    _myTheme != ThemeManager.Theme.Baba) {
-            _textMeshPro.font = babaFont;
-            _textMeshPro.fontSize = _initFontSize * babaFontScale;
+            _tmpText.font = babaFont;
+            _tmpText.fontSize = _initFontSize * babaFontScale;
+            _tmpText.lineSpacing = babaLineSpacingOffset;
+            
             _myTheme = ThemeManager.CurrentTheme;
         }
     }

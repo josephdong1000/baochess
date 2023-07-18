@@ -264,6 +264,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -337,6 +338,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f25fa83bf8de440aadd65764c9eba54b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicBackgroundColor: {r: 1, g: 1, b: 1, a: 1}
+  babaBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1 &566789117
 GameObject:
   m_ObjectHideFlags: 0
@@ -531,9 +546,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6255352174489482603}
-        m_TargetAssemblyTypeName: ButtonController, Assembly-CSharp
-        m_MethodName: SetUndo
+      - m_Target: {fileID: 785548555}
+        m_TargetAssemblyTypeName: ThemeManager, Assembly-CSharp
+        m_MethodName: SetClassic
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -634,8 +649,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!114 &691283840
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -927,8 +944,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!1 &853085033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1013,9 +1032,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6255352174489482603}
-        m_TargetAssemblyTypeName: ButtonController, Assembly-CSharp
-        m_MethodName: SetUndo
+      - m_Target: {fileID: 785548555}
+        m_TargetAssemblyTypeName: ThemeManager, Assembly-CSharp
+        m_MethodName: SetBaba
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1412,8 +1431,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!4 &1205270499 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3782795599068496188, guid: 0bc56411ece7449a7bdf2ce1fbe90145, type: 3}
@@ -1918,8 +1939,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!4 &1635320030 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7269086003476154187, guid: 57456ce29aaa245baa8f8adc6f462602, type: 3}
@@ -2122,8 +2145,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!114 &1981693206
 MonoBehaviour:
   m_ObjectHideFlags: 0

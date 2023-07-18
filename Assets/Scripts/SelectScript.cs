@@ -32,20 +32,29 @@ public class SelectScript : MonoBehaviour {
     private PieceScript.Side _playingSide;
     private PieceScript.Side _thisPieceSide;
 
-    // Start is called before the first frame update
-    void Start() {
+    private void Awake() {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         GameObject board = GameObject.FindGameObjectWithTag("Board");
         _boardScript = board.GetComponent<BoardScript>();
-        // _boardSelectedList = _boardScript.SelectedPositions;
         _boardHighlightedList = _boardScript.HighlightedPositions;
-        // _thisPieceSide = GetComponent<PieceScript>().PieceSide;
 
         _hovered = false;
         _update = true;
         _proportionHovered = 0;
+    }
 
-        // UpdatePosition();
+    private void Start() {
+        // _spriteRenderer = GetComponent<SpriteRenderer>();
+        // GameObject board = GameObject.FindGameObjectWithTag("Board");
+        // _boardScript = board.GetComponent<BoardScript>();
+        // _boardHighlightedList = _boardScript.HighlightedPositions;
+        //
+        // _hovered = false;
+        // _update = true;
+        // _proportionHovered = 0;
+
+        
+        UpdateBaseColor();
     }
 
     // Update is called once per frame
