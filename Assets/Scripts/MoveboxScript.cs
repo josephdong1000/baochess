@@ -14,6 +14,7 @@ public class MoveboxScript : MonoBehaviour {
     public float moveDistance;
     public float hideDistance;
     public float hideDistanceEpsilon;
+    public float hideXThreshold;
     public int moveboxHeightSize;
 
 
@@ -114,11 +115,9 @@ public class MoveboxScript : MonoBehaviour {
 
             yield return new WaitForSeconds(moveDeltaTime);
         }
-
-        // if () { // Whichever move is chosen, keep that movebox out
-        //     
-        // }
-        while (Mathf.Abs(hideDistanceAbsolute - transform.position.x) > hideDistanceEpsilon) {
+        
+        // while (Mathf.Abs(hideDistanceAbsolute - transform.position.x) > hideDistanceEpsilon) {
+        while (transform.position.x > ScreenPositions.Left + hideXThreshold) {
             EaseXPosition(hideDistanceAbsolute);
             yield return new WaitForSeconds(moveDeltaTime);
         }

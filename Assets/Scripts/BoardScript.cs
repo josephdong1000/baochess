@@ -397,6 +397,7 @@ public class BoardScript : MonoBehaviour {
                     var boardcoord = Instantiate(boardCoordinate, HighlightBoard[i, j].transform);
                     boardcoord.GetComponent<BoardCoordinateScript>().InitToBoardSquare(HighlightBoard[i, j], true);
                 }
+
                 if (j == 0) {
                     var boardcoord = Instantiate(boardCoordinate, HighlightBoard[i, j].transform);
                     boardcoord.GetComponent<BoardCoordinateScript>().InitToBoardSquare(HighlightBoard[i, j], false);
@@ -1445,23 +1446,15 @@ public class BoardScript : MonoBehaviour {
                             break;
                         }
 
+                        // If an invalid move has been selected, exit the Selection loop
                         SelectedPositions.RemoveAt(SelectedPositions.Count - 1);
-
                         SelectingMove = false;
                         yield return StartCoroutine(ResetGameLoop());
                         yield break;
-                        Debug.Log("what the");
-
-                        // if (_selectingMove) {
-                        //     yield return StartCoroutine(ResetGameLoop());
-                        // }
-                        // ResetGameLoop();
-                        // StartCoroutine(ResetGameLoop()); // Click invalid square in board -> reset selection
                     } else if (!pickMove && MoveboxScript.SelectedItem != -1) {
                         pickMove = true;
                         deltaPick[0] = true;
                         Debug.Log("a move has been picked");
-                        // Debug.Log();
                         break;
                     } else {
                         throw new NotImplementedException("what did you do lol");
@@ -1471,9 +1464,6 @@ public class BoardScript : MonoBehaviour {
                 }
 
                 choicesPicked++;
-
-                // ResetGameLoop();
-                // yield break;
 
                 yield return StartCoroutine(DeleteCircleSpritesAndList());
 
@@ -1535,7 +1525,7 @@ public class BoardScript : MonoBehaviour {
                 }
 
 
-                // Ease out moveboxes
+                // Ease out non-applicable moveboxes
                 foreach (GameObject movebox in MoveboxList) {
                     if (movebox != null &&
                         !narrowedMoveNames.Contains(movebox.GetComponent<MoveboxScript>().MoveName)) {
@@ -1543,11 +1533,7 @@ public class BoardScript : MonoBehaviour {
                     }
                 }
 
-                // GameObject[] moveBoxesToDelete = GameObject.FindGameObjectsWithTag("Movebox");
-                // for (int i = 0; i < moveBoxesToDelete.Length; i++) {
-                //     
-                // }
-
+                // Clear all circles to spawn in new circles
                 ClearCirclePositionsLists();
 
 
@@ -1557,7 +1543,7 @@ public class BoardScript : MonoBehaviour {
                     HighlightedPositions.Add(finalPosition);
                     if (!IsEmptySquare(targetPosition)) {
                         if (targetPosition == finalPosition) {
-                            AttackPositions.Add(targetPosition);
+                            AttackPositions.Add(targetPosition); //asdfasdf
                         } else {
                             RangedPositions.Add(targetPosition);
                         }
@@ -1571,14 +1557,22 @@ public class BoardScript : MonoBehaviour {
                     if (!IsEmptySquare(finalPositionA)) {
                         AttackPositions.Add(finalPositionA);
                     }
-                    // if (!IsEmptySquare(finalPositionB)) {
-                    //     AttackPositions.Add(finalPositionB);
-                    // }
                 }
 
-                // InstantiateCirclesShields(moveName: new List<string> { selectedMoveName });
-                yield return StartCoroutine(DeleteCircleSpritesAndList());
-                InstantiateCirclesShields(moveName: narrowedMoveNames);
+                // If the move has been narrowed down to 1 move
+                // or move selection is cancelled, don't instantiate
+                if (narrowedSingleMoves.Count + narrowedMultipleMoves.Count > 1) {
+                    yield return StartCoroutine(DeleteCircleSpritesAndList());
+                    InstantiateCirclesShields(moveName: narrowedMoveNames);
+                }
+
+
+                // if (narrowedSingleMoves.Count + narrowedMultipleMoves.Count > 1 ||
+                // CountTrue(pickTarget, pickPath, pickAssist, pickMove) == 0) continue;
+
+                // Else, instantiate and continue narrowing down
+                // yield return StartCoroutine(DeleteCircleSpritesAndList());
+                // InstantiateCirclesShields(moveName: narrowedMoveNames);
             }
 
             if (narrowedSingleMoves.Count + narrowedMultipleMoves.Count == 0) { // A move is not valid for the square

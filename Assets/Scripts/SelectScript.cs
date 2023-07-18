@@ -64,6 +64,7 @@ public class SelectScript : MonoBehaviour {
             StartCoroutine(UpdateHoveringColor());
             _update = false;
         }
+        UpdateBaseColor();
     }
 
     private void OnMouseOver() {
@@ -75,15 +76,10 @@ public class SelectScript : MonoBehaviour {
     }
 
     IEnumerator UpdateHoveringColor() {
-        // _playingSide = _boardScript.PlayingSide;
-        // UpdatePosition();
-        // float baseHighlight;
-
-
+        
         while (true) {
-            // GetComponent<PieceScript>().SetSpriteSide();
 
-            UpdateBaseColor();
+            // UpdateBaseColor();
 
             if (_hovered) {
                 // _proportionHovered = Math.Min(_proportionHovered + Time.deltaTime * colorFadeSpeed, 1);
@@ -98,31 +94,7 @@ public class SelectScript : MonoBehaviour {
                 Color.Lerp((_boardHighlightedList.Contains(Position)) ? highlightedColor : defaultColor,
                            hoveredColor,
                            _proportionHovered);
-
-
-            // if (!_boardSelectedList.Contains(Position)) {
-            //     // baseHighlight = _boardHighlightedList.Contains(Position) ? 0.5f : 0.0f;
-            //
-            //     if (_hovered) {
-            //         // _proportionHovered = Math.Min(_proportionHovered + Time.deltaTime * colorFadeSpeed, 1);
-            //         _proportionHovered = Math.Min(_proportionHovered + colorFadeDeltaTime * colorFadeSpeed, 1);
-            //     } else {
-            //         // _proportionHovered = Math.Max(_proportionHovered - Time.deltaTime * colorFadeSpeed, 0);
-            //         _proportionHovered = Math.Max(_proportionHovered - colorFadeDeltaTime * colorFadeSpeed, 0);
-            //     }
-            //
-            //     // Lerp between default and hovered colors
-            //     _spriteRenderer.color =
-            //         Color.Lerp((_boardHighlightedList.Contains(Position)) ? highlightedColor : defaultColor,
-            //                    hoveredColor,
-            //                    _proportionHovered);
-            // } else {
-            //     // _spriteRenderer.color = (_thisPieceSide == _playingSide ||
-            //     //                          _thisPieceSide == PieceScript.Side.None)
-            //     //     ? selectedFriendlyColor
-            //     //     : selectedEnemyColor;
-            // }
-
+            
             yield return new WaitForSeconds(colorFadeDeltaTime);
         }
     }

@@ -190,8 +190,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   babaFont: {fileID: 0}
   babaFontScale: 0
+  babaLineSpacingOffset: 0
   classicFont: {fileID: 0}
   classicFontScale: 0
+  classicLineSpacingOffset: 0
 --- !u!1 &1656262625099186510
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,6 +443,7 @@ MonoBehaviour:
   moveDistance: 0.5
   hideDistance: 10
   hideDistanceEpsilon: 2
+  hideXThreshold: -3
   moveboxHeightSize: 3
 --- !u!1 &1656262626082179911
 GameObject:
