@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1934396874463144896}
   - component: {fileID: 1934396874463144903}
   - component: {fileID: 1934396874463144902}
+  - component: {fileID: 9034653134138297443}
   m_Layer: 0
   m_Name: Board Square Coordinate
   m_TagString: Untagged
@@ -186,3 +187,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   centerDistance: 0
+--- !u!114 &9034653134138297443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934396874463144901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4574003c9cc64401daf78193d1cb4bc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  babaFont: {fileID: 0}
+  babaFontScale: 0
+  classicFont: {fileID: 0}
+  classicFontScale: 0

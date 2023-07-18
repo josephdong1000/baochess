@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 3471512298790585497}
   - component: {fileID: 6912722633443316457}
   - component: {fileID: 9193660344392242936}
+  - component: {fileID: 1606234799911805057}
   m_Layer: 0
   m_Name: Move Box Text
   m_TagString: Untagged
@@ -424,3 +425,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 6912722633443316457}
   m_maskType: 0
+--- !u!114 &1606234799911805057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8231159770567119064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4574003c9cc64401daf78193d1cb4bc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  babaFont: {fileID: 0}
+  babaFontScale: 0
+  classicFont: {fileID: 0}
+  classicFontScale: 0
