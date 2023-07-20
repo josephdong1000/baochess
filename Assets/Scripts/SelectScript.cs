@@ -5,66 +5,71 @@ using System.Linq;
 using UnityEngine;
 
 public class SelectScript : MonoBehaviour {
-    public Color defaultColor;
-    public Color hoveredColor;
-    public Color highlightedColor;
-    public Color selectedFriendlyColor;
-    public Color selectedEnemyColor;
+    // public Color highlightedColor;
+    // public Color selectedFriendlyColor;
+    // public Color selectedEnemyColor;
 
     public float colorFadeSpeed;
     public float colorFadeDeltaTime;
 
-    public Sprite whiteSprite;
-    public Sprite blackSprite;
-    public Sprite whiteHighlightSprite;
-    public Sprite blackHighlightSprite;
+    public Sprite blankSprite;
+    public Sprite classicHighlightDotSprite;
+    public Sprite babaHighlightDotSprite;
 
-    public (int, int) Position { get; set; }
+    // Deprecated
+    // public Sprite whiteSprite;
+    // public Sprite blackSprite;
+    // public Sprite whiteHighlightSprite;
+    // public Sprite blackHighlightSprite;
+
+
+    [HideInInspector] public (int, int) Position;
     private bool _hovered;
     private bool _update;
     private SpriteRenderer _spriteRenderer;
+    private SpriteRenderer _childSpriteRenderer;
 
+    private Color _defaultColor;
+    private Color _hoveredColor;
     private float _proportionHovered;
 
-    // private List<(int, int)> _boardSelectedList;
-    private List<(int, int)> _boardHighlightedList;
     private BoardScript _boardScript;
-    private PieceScript.Side _playingSide;
-    private PieceScript.Side _thisPieceSide;
+    private ThemeColorsManager _themeColorsManager;
+    private ThemeManager.Theme _myTheme;
+    
 
     private void Awake() {
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer.sprite = blankSprite;
+        _childSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        _childSpriteRenderer.enabled = false;
+
         GameObject board = GameObject.FindGameObjectWithTag("Board");
         _boardScript = board.GetComponent<BoardScript>();
-        _boardHighlightedList = _boardScript.HighlightedPositions;
 
         _hovered = false;
         _update = true;
         _proportionHovered = 0;
+        _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
+        _myTheme = ThemeManager.Theme.None;
     }
 
     private void Start() {
-        // _spriteRenderer = GetComponent<SpriteRenderer>();
-        // GameObject board = GameObject.FindGameObjectWithTag("Board");
-        // _boardScript = board.GetComponent<BoardScript>();
-        // _boardHighlightedList = _boardScript.HighlightedPositions;
-        //
-        // _hovered = false;
-        // _update = true;
-        // _proportionHovered = 0;
-
-        
-        UpdateBaseColor();
+        UpdateThemeSpritesColors();
     }
 
     // Update is called once per frame
     void Update() {
+        UpdateThemeSpritesColors();
         if (_update) {
-            FetchSides();
+            // FetchSides();
             StartCoroutine(UpdateHoveringColor());
             _update = false;
         }
-        UpdateBaseColor();
+    }
+
+    private void LateUpdate() {
+        UpdateHighlightDot();
     }
 
     private void OnMouseOver() {
@@ -76,98 +81,70 @@ public class SelectScript : MonoBehaviour {
     }
 
     IEnumerator UpdateHoveringColor() {
-        
         while (true) {
 
-            // UpdateBaseColor();
-
             if (_hovered) {
-                // _proportionHovered = Math.Min(_proportionHovered + Time.deltaTime * colorFadeSpeed, 1);
                 _proportionHovered = Math.Min(_proportionHovered + colorFadeDeltaTime * colorFadeSpeed, 1);
             } else {
-                // _proportionHovered = Math.Max(_proportionHovered - Time.deltaTime * colorFadeSpeed, 0);
                 _proportionHovered = Math.Max(_proportionHovered - colorFadeDeltaTime * colorFadeSpeed, 0);
             }
 
             // Lerp between default and hovered colors
             _spriteRenderer.color =
-                Color.Lerp((_boardHighlightedList.Contains(Position)) ? highlightedColor : defaultColor,
-                           hoveredColor,
+                Color.Lerp(_defaultColor,
+                           (_defaultColor + _hoveredColor) * 0.5f, // Average between the colors
                            _proportionHovered);
-            
+
             yield return new WaitForSeconds(colorFadeDeltaTime);
         }
     }
 
-    private void FetchSides() {
-        _playingSide = _boardScript.PlayingSide;
-        if (_boardScript.IsEmptySquare(Position)) {
-            _thisPieceSide = PieceScript.Side.None;
-        } else {
-            _thisPieceSide = _boardScript.GetPieceSide(Position);
+    private void UpdateThemeSpritesColors() {
+        // Changes the board square's default colors and highlight dot sprites based on the current theme
+        
+        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
+            _myTheme != ThemeManager.Theme.Classic) {
+            
+            _defaultColor = _boardScript.IsSameParity((0, 1), Position)
+                ? _themeColorsManager.classicLightSquareColor
+                : _themeColorsManager.classicDarkSquareColor;
+            _hoveredColor = _themeColorsManager.classicHoveredColor;
+            _childSpriteRenderer.sprite = classicHighlightDotSprite;
+            
+            _myTheme = ThemeManager.Theme.Classic;
+        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
+                   _myTheme != ThemeManager.Theme.Baba) {
+            
+            _defaultColor = _boardScript.IsSameParity((0, 1), Position)
+                ? _themeColorsManager.babaLightSquareColor
+                : _themeColorsManager.babaDarkSquareColor;
+            _hoveredColor = _themeColorsManager.babaHoveredColor;
+            _childSpriteRenderer.sprite = babaHighlightDotSprite;
+            
+            _myTheme = ThemeManager.Theme.Baba;
         }
     }
 
-    private void UpdateBaseColor() {
+    /// <summary>
+    /// If applicable, show the highlight dot
+    /// </summary>
+    private void UpdateHighlightDot() {
+        
+
         if (_boardScript.HighlightedPositions.Contains(Position) &&
             !_boardScript.SelectedPositions.Contains(Position) &&
             !_boardScript.AttackPositions.Contains(Position)) {
-            _spriteRenderer.sprite = _boardScript.IsSameParity((0, 1), Position)
-                ? whiteHighlightSprite
-                : blackHighlightSprite;
+            // If the sprite is highlightable
+            _childSpriteRenderer.enabled = true;
         } else {
-            _spriteRenderer.sprite = _boardScript.IsSameParity((0, 1), Position) ? whiteSprite : blackSprite;
+            _childSpriteRenderer.enabled = false;
         }
     }
 
 
     private void OnMouseDown() {
         if (BoardScript.SelectingMove) {
-            _boardScript.SelectedPositions.Add(Position);    
+            _boardScript.SelectedPositions.Add(Position);
         }
-        
-
-        // if (!Input.GetKey(KeyCode.Space)) {
-        // }
-
-        // Hacked together piece changer DELETE LATER
-
-        // if (Input.GetKey(KeyCode.Space)) {
-        //     List<char> thing = new List<char> {
-        //         ' ', 'r', 'n', 'b', 'q', 'k', 'p', 'f',
-        //         'R', 'N', 'B', 'Q', 'K', 'P', 'F'
-        //     };
-        //     int index = thing.IndexOf(_boardScript.BoardTemplateReverse[7 - Position.Item1, Position.Item2]);
-        //     if (thing[index] != 'F') {
-        //         _boardScript.BoardTemplateReverse[7 - Position.Item1, Position.Item2] = thing[index + 1];
-        //         // for (int i = 0; i < 8; i++) {
-        //         //     for (int j = 0; j < 8; j++) {
-        //         //         Debug.Log(_boardScript.BoardTemplateReverse[7 - i, j] + " is " + (i, j));
-        //         //     }
-        //         // }
-        //     } else {
-        //         _boardScript.BoardTemplateReverse[7 - Position.Item1, Position.Item2] = ' ';
-        //     }
-        //     
-        //     _boardScript.UpdateBoardTemplate();
-        //     
-        //     
-        //     
-        //     _boardScript.DeleteList.Add(_boardScript.GetPosition(Position));
-        //     _boardScript.DeletePieces();
-        //     // _boardScript.UpdatePiecePositions();
-        //     // _boardScript.UpdatePieceGameObjectPositions();
-        //     _boardScript.ClearBoard();
-        //     _boardScript.PopulateBoard();
-        //     _boardScript.ResetGameLoop();
-        // }
     }
-
-    // private void UpdatePosition() {
-    //     Position = gameObject.GetComponent<PieceScript>().Position;
-    // }
-
-    // private void UpdateBoardSelectedList() {
-    //     // _boardSelectedList = boar
-    // }
 }

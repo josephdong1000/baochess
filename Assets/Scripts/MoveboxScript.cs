@@ -13,7 +13,6 @@ public class MoveboxScript : MonoBehaviour {
     public float moveDeltaTime;
     public float moveDistance;
     public float hideDistance;
-    public float hideDistanceEpsilon;
     public float hideXThreshold;
     public int moveboxHeightSize;
 

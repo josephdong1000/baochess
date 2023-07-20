@@ -15,11 +15,13 @@ public class PieceScript : MonoBehaviour {
     public void SetTurnsOnBoard(int n) => TurnsOnBoard = n;
     public bool Promoted { get; set; }
 
-    public Sprite whiteSprite;
-    public Sprite blackSprite;
-    public Sprite babaSprite;
-    public static Color WhiteColor;
-    public static Color BlackColor;
+    // public Sprite whiteSprite;
+    // public Sprite blackSprite;
+    // public Sprite babaSprite;
+    // public static Color WhiteColor;
+    // public static Color BlackColor;
+
+    private PieceThemeHandler _pieceThemeHandler;
 
     // private bool debugMode = false;
 
@@ -47,7 +49,7 @@ public class PieceScript : MonoBehaviour {
     /// List of functions that take in a move and return if that move can legally capture. Will only be checked for moving onto enemy square.
     /// </summary>
     public List<Func<(int, int), bool>> CaptureFunctions { get; protected set; }
-    
+
     /// <summary>
     /// List of functions that take in a move and return if that move can legally capture. Will only be checked for moving onto friendly square.
     /// </summary>
@@ -88,18 +90,19 @@ public class PieceScript : MonoBehaviour {
         RangedFunctions { get; protected set; } // Moves that move somewhere but attack elsewhere
 
     public static List<string> SpecialFunctions;
-    
-    
+
+
     protected static GameObject Board;
     protected static BoardScript BoardScript; // some way to make this not set a million times?
     protected static int BoardSize;
-
+    private SpriteRenderer _spriteRenderer;
 
     // Instance variables
     /// <summary>
     /// List of GameObjects that attack this piece, using string move
     /// </summary>
     public List<(GameObject, string)> AttackedBy { get; protected set; }
+
     /// <summary>
     /// List of GameObjects that defend this piece against GameObjects (null if any) using string move
     /// </summary>
@@ -147,9 +150,11 @@ public class PieceScript : MonoBehaviour {
         // MoveCounter = 0;
         // TurnsOnBoard = 0;
         Promoted = false; // Override if a promoted pawn
+        _pieceThemeHandler = GetComponent<PieceThemeHandler>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
         // WhiteColor = BoardScript.whiteColor;
         // BlackColor = BoardScript.blackColor;
-        
+
         // AllFunctionLists = new List<dynamic> {
         //     MoveFunctions,
         //     CaptureFunctions,
@@ -158,27 +163,28 @@ public class PieceScript : MonoBehaviour {
         //     AttackReplaceFunctions,
         //     PassiveReplaceFunctions
         // };
-        
     }
 
     protected void Start() {
         SetSpriteSide();
     }
 
+
+    protected void LateUpdate() {
+        SetSpriteSide();
+    }
+
     public void SetSpriteSide() {
-        SpriteRenderer sp = GetComponent<SpriteRenderer>();
-        WhiteColor = BoardScript.whiteColor;
-        BlackColor = BoardScript.blackColor;
+        // WhiteColor = BoardScript.whiteColor;
+        // BlackColor = BoardScript.blackColor;
 
         if (PieceSide != Side.None) {
-            sp.sprite = babaSprite;
-
             if (PieceSide == Side.White) {
-                // sp.sprite = babaSprite;
-                sp.color = WhiteColor;
+                _spriteRenderer.sprite = _pieceThemeHandler.whiteSprite;
+                _spriteRenderer.color = _pieceThemeHandler.whiteColor;
             } else {
-                // sp.sprite = debugMode ? blackSprite : babaSprite;
-                sp.color = BlackColor;
+                _spriteRenderer.sprite = _pieceThemeHandler.blackSprite;
+                _spriteRenderer.color = _pieceThemeHandler.blackColor;
             }
         }
     }
@@ -258,5 +264,4 @@ public class PieceScript : MonoBehaviour {
             }
         }
     }
-    
 }

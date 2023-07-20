@@ -57,7 +57,7 @@ public class EditorButtonManager : MonoBehaviour {
             _editorButtons.Add(Instantiate(editorButtonPrefab,
                                            position,
                                            Quaternion.identity));
-            _editorButtons.Last().GetComponent<EditorButtonScript>().thisPieceType =
+            _editorButtons.Last().GetComponent<EditorButtonScript>().ThisPieceType =
                 EditorButtonScript.AllPieceTypes[i];
         }
     }

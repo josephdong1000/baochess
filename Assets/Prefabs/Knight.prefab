@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6928007783343497627}
   - component: {fileID: 4345908895119979333}
   - component: {fileID: 582059509}
+  - component: {fileID: 5555652615333170212}
   m_Layer: 0
   m_Name: Knight
   m_TagString: Untagged
@@ -97,6 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaae3d03f1aad496ca9ab115cfea636a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whiteSprite: {fileID: 21300000, guid: 5f01f1ec2c7fe4ada99caeeb62a3e0df, type: 3}
-  blackSprite: {fileID: 21300000, guid: 7cb0cbb965435445d99cc5cf520af95b, type: 3}
-  babaSprite: {fileID: 21300000, guid: 2fb55e48094b24e188b375f2ff88a088, type: 3}
+--- !u!114 &5555652615333170212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7315756528922811226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f500e67a996e4baaacc688d4ab30d6e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicWhiteSprite: {fileID: 3286163911610860551, guid: 9bf5a89a8e42746e1b80fc67d38cf169, type: 3}
+  classicBlackSprite: {fileID: 3286163911610860551, guid: d8d17248e7f1b4628b5a389284962b84, type: 3}
+  classicWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  classicBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  babaWhiteSprite: {fileID: 21300000, guid: 2fb55e48094b24e188b375f2ff88a088, type: 3}
+  babaBlackSprite: {fileID: 21300000, guid: 2fb55e48094b24e188b375f2ff88a088, type: 3}
+  babaWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  babaBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  whiteSprite: {fileID: 0}
+  blackSprite: {fileID: 0}
+  whiteColor: {r: 0, g: 0, b: 0, a: 0}
+  blackColor: {r: 0, g: 0, b: 0, a: 0}

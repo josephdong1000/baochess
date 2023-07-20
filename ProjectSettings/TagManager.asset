@@ -9,6 +9,7 @@ TagManager:
   - Circle
   - Movebox
   - Editor Manager
+  - Theme Manager
   layers:
   - Default
   - TransparentFX

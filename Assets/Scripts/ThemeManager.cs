@@ -8,6 +8,7 @@ public class ThemeManager : MonoBehaviour {
     public enum Theme {
         Classic,
         Baba,
+        None,
     }
 
     public void Start() {

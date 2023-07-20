@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3782795599068496188}
   - component: {fileID: 2116648455827947550}
   - component: {fileID: 3815868633085228108}
+  - component: {fileID: 5838327759386671658}
   m_Layer: 0
   m_Name: King
   m_TagString: Untagged
@@ -97,6 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 538efc1f059fa48d0a410993f706fe9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whiteSprite: {fileID: 21300000, guid: 9f8fca930104e41d5a3d5d7ee1ec644d, type: 3}
-  blackSprite: {fileID: 21300000, guid: 92844775e07794b32afe5077cb11559d, type: 3}
-  babaSprite: {fileID: 21300000, guid: 0480b7b582f934d8a94210d977c468bd, type: 3}
+--- !u!114 &5838327759386671658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3369511546320071791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f500e67a996e4baaacc688d4ab30d6e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicWhiteSprite: {fileID: 3286163911610860551, guid: 3deedf0dff0ba4987ae2a716f5ef4cb3, type: 3}
+  classicBlackSprite: {fileID: 3286163911610860551, guid: 49cc8af6e514a4779b4c6e08744152d4, type: 3}
+  classicWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  classicBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  babaWhiteSprite: {fileID: 21300000, guid: 0480b7b582f934d8a94210d977c468bd, type: 3}
+  babaBlackSprite: {fileID: 21300000, guid: 0480b7b582f934d8a94210d977c468bd, type: 3}
+  babaWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  babaBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  whiteSprite: {fileID: 0}
+  blackSprite: {fileID: 0}
+  whiteColor: {r: 0, g: 0, b: 0, a: 0}
+  blackColor: {r: 0, g: 0, b: 0, a: 0}

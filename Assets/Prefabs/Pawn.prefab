@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7269086003476154187}
   - component: {fileID: 2005965692071404275}
   - component: {fileID: 214969474743432160}
+  - component: {fileID: 1635320033}
   m_Layer: 0
   m_Name: Pawn
   m_TagString: Untagged
@@ -97,6 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec5539c7bd5ba42f7821a8e88f55d96e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whiteSprite: {fileID: 21300000, guid: 82b0716485ec64a5e82de1d93e98b046, type: 3}
-  blackSprite: {fileID: 21300000, guid: 3a9a5af98f74c4db4a7228918ec51b03, type: 3}
-  babaSprite: {fileID: 21300000, guid: f847da2aed68c4823be4acaf1daae152, type: 3}
+--- !u!114 &1635320033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1445435812483602723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f500e67a996e4baaacc688d4ab30d6e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicWhiteSprite: {fileID: 3286163911610860551, guid: 08d6405e93b9d43bd9dc50e3da3dfe4c, type: 3}
+  classicBlackSprite: {fileID: 3286163911610860551, guid: ea443014f7f744676ae4bae230df78fd, type: 3}
+  classicWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  classicBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  babaWhiteSprite: {fileID: 21300000, guid: f847da2aed68c4823be4acaf1daae152, type: 3}
+  babaBlackSprite: {fileID: 21300000, guid: f847da2aed68c4823be4acaf1daae152, type: 3}
+  babaWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  babaBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  whiteSprite: {fileID: 0}
+  blackSprite: {fileID: 0}
+  whiteColor: {r: 0, g: 0, b: 0, a: 0}
+  blackColor: {r: 0, g: 0, b: 0, a: 0}

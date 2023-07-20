@@ -106,24 +106,6 @@ public class BoardScript : MonoBehaviour {
         { 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P' },
         { 'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R' }
 
-        // { ' ', 'p', 'F', 'r', ' ', ' ', 'N', 'B' },
-        // { 'R', ' ', ' ', ' ', ' ', ' ', ' ', 'R' },
-        // { ' ', 'f', ' ', 'p', ' ', ' ', ' ', ' ' },
-        // { ' ', ' ', 'F', ' ', ' ', ' ', ' ', ' ' },
-        // { ' ', ' ', ' ', 'r', 'N', 'P', ' ', ' ' },
-        // { ' ', ' ', ' ', ' ', ' ', 'B', 'B', ' ' },
-        // { ' ', ' ', 'Q', ' ', ' ', 'P', 'B', ' ' },
-        // { ' ', ' ', ' ', 'K', 'K', ' ', ' ', ' ' },
-        //
-        // { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
-        // { ' ', ' ', ' ', 'P', ' ', ' ', ' ', ' ' },
-        // { ' ', ' ', ' ', ' ', 'P', 'P', ' ', ' ' },
-        // { ' ', ' ', ' ', 'Q', 'N', 'p', ' ', ' ' },
-        // { ' ', ' ', ' ', 'b', 'p', 'P', 'p', ' ' },
-        // { ' ', ' ', ' ', ' ', ' ', 'b', 'P', ' ' },
-        // { ' ', 'p', ' ', 'Q', 'K', 'R', ' ', ' ' },
-        // { 'R', ' ', ' ', ' ', 'K', ' ', ' ', 'R' },
-
         // { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
         // { ' ', ' ', ' ', 'q', 'r', ' ', ' ', ' ' },
         // { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
@@ -140,10 +122,7 @@ public class BoardScript : MonoBehaviour {
     private bool _exitUpdate;
     private IEnumerator _updateGameLoop;
     private IEnumerator _checkResetSelection;
-
-    // Hacky config solution
-    // public static BoardData BoardData { get; set; }
-
+    
     private void Awake() {
         // Vertically flip the template board
         UpdateBoardTemplate();
@@ -634,15 +613,13 @@ public class BoardScript : MonoBehaviour {
                         }
                     }
                     // ResetBanningMoveFlags();
-
-                    Debug.Log(string.Join(", ", _bannedMoves));
-
+                    
                     // Clear visuals and reset game loop
                     yield return StartCoroutine(ResetGameLoop());
                 }
 
-                yield return new WaitForSeconds(0.01f); // Hardcoded cooldown
                 BoardMode = ButtonController.Mode.Play;
+                yield return new WaitForSeconds(0.01f); // Hardcoded cooldown
             } else {
                 throw new Exception("No actual mode selected");
             }

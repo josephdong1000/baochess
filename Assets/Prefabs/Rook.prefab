@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1857269640401597815}
   - component: {fileID: 8452333018023970209}
   - component: {fileID: 523358346109712867}
+  - component: {fileID: 6884226945907055203}
   m_Layer: 0
   m_Name: Rook
   m_TagString: Untagged
@@ -97,6 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90a5309a5e0ff4f09a77f28c1bbbe3e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whiteSprite: {fileID: 21300000, guid: f392a59e36d7d49d98521203bfebd354, type: 3}
-  blackSprite: {fileID: 21300000, guid: 940a23d7509ff455d9825e1c5977b396, type: 3}
-  babaSprite: {fileID: 21300000, guid: 560167eade8ee4317a473e0a7acb0dd1, type: 3}
+--- !u!114 &6884226945907055203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1645643281394936739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f500e67a996e4baaacc688d4ab30d6e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicWhiteSprite: {fileID: 3286163911610860551, guid: 09a1f91ce24444220aaea0c49ffa3d83, type: 3}
+  classicBlackSprite: {fileID: 3286163911610860551, guid: 8551870e17c214b15a0d2bc131e15341, type: 3}
+  classicWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  classicBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  babaWhiteSprite: {fileID: 21300000, guid: 560167eade8ee4317a473e0a7acb0dd1, type: 3}
+  babaBlackSprite: {fileID: 21300000, guid: 560167eade8ee4317a473e0a7acb0dd1, type: 3}
+  babaWhiteColor: {r: 0, g: 0, b: 0, a: 0}
+  babaBlackColor: {r: 0, g: 0, b: 0, a: 0}
+  whiteSprite: {fileID: 0}
+  blackSprite: {fileID: 0}
+  whiteColor: {r: 0, g: 0, b: 0, a: 0}
+  blackColor: {r: 0, g: 0, b: 0, a: 0}

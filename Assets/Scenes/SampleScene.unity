@@ -175,9 +175,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da4ad24c7362b4e27b5793f446c24b93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whiteSprite: {fileID: 0}
-  blackSprite: {fileID: 0}
-  babaSprite: {fileID: 0}
 --- !u!1 &392843124
 GameObject:
   m_ObjectHideFlags: 0
@@ -760,9 +757,10 @@ GameObject:
   m_Component:
   - component: {fileID: 785548556}
   - component: {fileID: 785548555}
+  - component: {fileID: 785548557}
   m_Layer: 0
   m_Name: Theme Manager
-  m_TagString: Untagged
+  m_TagString: Theme Manager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -794,6 +792,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &785548557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785548554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3cf974dc3643cda84e6e1fbc2d971a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  classicWhiteColor: {r: 1, g: 1, b: 1, a: 1}
+  classicBlackColor: {r: 1, g: 1, b: 1, a: 1}
+  classicLightSquareColor: {r: 0.9490196, g: 0.88235295, b: 0.7647059, a: 1}
+  classicDarkSquareColor: {r: 0.7647059, g: 0.627451, b: 0.50980395, a: 1}
+  classicHoveredColor: {r: 0.9607843, g: 0.6627451, b: 0.105882354, a: 1}
+  babaWhiteColor: {r: 0.9490196, g: 0.37254903, b: 0.36078432, a: 1}
+  babaBlackColor: {r: 0.4392157, g: 0.75686276, b: 0.7019608, a: 1}
+  babaLightSquareColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
+  babaDarkSquareColor: {r: 0.105882354, g: 0.105882354, b: 0.105882354, a: 1}
+  babaHoveredColor: {r: 0.9607843, g: 0.6627451, b: 0.105882354, a: 1}
 --- !u!1 &799802286
 GameObject:
   m_ObjectHideFlags: 0

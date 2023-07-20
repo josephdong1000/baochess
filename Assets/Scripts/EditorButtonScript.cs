@@ -3,28 +3,41 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 public class EditorButtonScript : MonoBehaviour {
-    public Color highlightColor;
-    public Color unhighlightColor;
-    public List<Sprite> spriteList;
+    [HideInInspector] public Color highlightColor;
+    [HideInInspector] public Color unhighlightColor;
 
-
-    public (PieceScript.PieceType, PieceScript.Side) thisPieceType { get; set; }
-
+    public List<Sprite> classicSpriteList;
+    [FormerlySerializedAs("spriteList")] public List<Sprite> babaSpriteList;
+    
+    [HideInInspector] public (PieceScript.PieceType, PieceScript.Side) ThisPieceType;
     public static (PieceScript.PieceType, PieceScript.Side) SelectedPieceType;
     public static List<(PieceScript.PieceType, PieceScript.Side)> AllPieceTypes { get; private set; }
 
-    private BoardScript _boardScript;
     private SpriteRenderer _backgroundSpriteRenderer;
     private SpriteRenderer _pieceSpriteRenderer;
+    private List<Sprite> _spriteList;
+    private ThemeColorsManager _themeColorsManager;
+    private ThemeManager.Theme _myTheme;
+    private Color _whiteColor;
+    private Color _blackColor;
 
+
+    private void Awake() {
+        SelectedPieceType = (PieceScript.PieceType.Empty, PieceScript.Side.None);
+        _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
+        
+        _pieceSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        _backgroundSpriteRenderer = transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>();
+
+        _myTheme = ThemeManager.Theme.None;
+    }
 
     // Start is called before the first frame update
     void Start() {
-        SelectedPieceType = (PieceScript.PieceType.Empty, PieceScript.Side.None);
-        _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
         AllPieceTypes = BoardScript.TypePieceDict.Keys
             .Skip(1)
             .Select(s => (s, PieceScript.Side.White))
@@ -32,47 +45,61 @@ public class EditorButtonScript : MonoBehaviour {
             .Concat(BoardScript.TypePieceDict.Keys.Skip(1).Select(s => (s, PieceScript.Side.Black)))
             .Append((PieceScript.PieceType.Empty, PieceScript.Side.None))
             .ToList();
-        // _editorButtons = new();
         
-        // Debug.Log(string.Join(",", AllPieceTypes));
-
-        // _backgroundSpriteRenderer = GetComponent<SpriteRenderer>();
-        _pieceSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
-        _backgroundSpriteRenderer = transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>();
-
-        // _pieceSpriteRenderer.sprite = AllPieceTypes.IndexOf(thisPieceType) % 7
-
-        // Debug.Log(string.Join(",", AllPieceTypes));
+        UpdateThemeSpritesColors();
     }
 
     private void OnMouseDown() {
-        SelectedPieceType = thisPieceType;
+        SelectedPieceType = ThisPieceType;
     }
 
     private void Update() {
-        // if (AllPieceTypes.IndexOf(thisPieceType) == -1) {
-        if (thisPieceType == default) {
-            // Debug.Log(thisPieceType);
+        if (ThisPieceType == default) {
             return;
         }
-
         
-        
+        UpdateThemeSpritesColors();
 
-        if (thisPieceType.Item1 == PieceScript.PieceType.Empty) {
-            _pieceSpriteRenderer.sprite = spriteList.Last();
+        if (ThisPieceType.Item1 == PieceScript.PieceType.Empty) {
+            _pieceSpriteRenderer.sprite = _spriteList.Last();
         } else {
-            _pieceSpriteRenderer.sprite = spriteList[AllPieceTypes.IndexOf(thisPieceType) % spriteList.Count];
-            // _pieceSpriteRenderer.sprite = spriteList[AllPieceTypes.IndexOf(thisPieceType) % (spriteList.Count - 1)];
-            _pieceSpriteRenderer.color = thisPieceType.Item2 == PieceScript.Side.White
-                ? _boardScript.whiteColor
-                : _boardScript.blackColor;
+            // _pieceSpriteRenderer.sprite = _spriteList[AllPieceTypes.IndexOf(ThisPieceType) % _spriteList.Count];
+            _pieceSpriteRenderer.sprite = _spriteList[AllPieceTypes.IndexOf(ThisPieceType)];
+            _pieceSpriteRenderer.color = ThisPieceType.Item2 == PieceScript.Side.White
+                ? _whiteColor
+                : _blackColor;
         }
 
-        if (SelectedPieceType != thisPieceType) {
+        if (SelectedPieceType != ThisPieceType) {
             _backgroundSpriteRenderer.color = unhighlightColor;
         } else {
             _backgroundSpriteRenderer.color = highlightColor;
+        }
+    }
+
+    private void UpdateThemeSpritesColors() {
+        // Changes the editor button's default colors and highlight dot sprites based on the current theme
+
+        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
+            _myTheme != ThemeManager.Theme.Classic) {
+
+            highlightColor = _themeColorsManager.classicLightSquareColor;
+            unhighlightColor = _themeColorsManager.classicDarkSquareColor;
+            _whiteColor = _themeColorsManager.classicWhiteColor;
+            _blackColor = _themeColorsManager.classicBlackColor;
+            _spriteList = classicSpriteList;
+            
+            _myTheme = ThemeManager.Theme.Classic;
+        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
+                   _myTheme != ThemeManager.Theme.Baba) {
+            
+            highlightColor = _themeColorsManager.babaLightSquareColor;
+            unhighlightColor = _themeColorsManager.babaDarkSquareColor;
+            _whiteColor = _themeColorsManager.babaWhiteColor;
+            _blackColor = _themeColorsManager.babaBlackColor;
+            _spriteList = babaSpriteList;
+
+            _myTheme = ThemeManager.Theme.Baba;
         }
     }
 }
