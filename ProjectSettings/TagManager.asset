@@ -10,6 +10,7 @@ TagManager:
   - Movebox
   - Editor Manager
   - Theme Manager
+  - Move Relayer
   layers:
   - Default
   - TransparentFX
