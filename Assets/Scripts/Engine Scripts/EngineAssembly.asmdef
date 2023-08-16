@@ -1,0 +1,23 @@
+{
+    "name": "EngineAssembly",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0cf95b147383b4dcfa7ab93685a4a4cc",
+        "GUID:176698d3e778a427a8fd1a6c62072b5c",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:6d9e76f71af2a4463a37df4e3424d12d",
+        "GUID:7c88a4a7926ee5145ad2dfa06f454c67",
+        "GUID:2e36b1602a72a4afdab448c5d6f03ce7",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:3d9e3f22823e44201851f9fb3b584112"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
