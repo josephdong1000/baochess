@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
@@ -93,7 +94,7 @@ public class BoardScript : MonoBehaviour {
     public static Dictionary<PieceScript.PieceType, GameObject> TypePieceDict;
 
     private bool _editingBoard;
-
+    [HideInInspector, AllowNull] public static bool[] receivedEnemyBoardState;
 
     [HideInInspector] public char[,] BoardTemplateReverse = {
         // Upper case = white, lower case = black
@@ -239,41 +240,49 @@ public class BoardScript : MonoBehaviour {
             UpdateAllSpriteSides();
             UpdatePieceCountReferences();
 
-            if (MoveRelayerManager.Instance.startMultiplayerGame) {
+            if (MoveRelayerScript.Instance != null &&
+                MoveRelayerScript.Instance.StartMultiplayerGame) {
                 // Receiving side correctly!
-                Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.thisSide}");
+                Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.ThisSide}");
 
                 // yield return new WaitUntil(() => MoveRelayerScript.Instance.thisSide != PieceScript.Side.None);
 
-                if (MoveRelayerScript.Instance.thisSide != PlayingSide) {
-                    Debug.Log($"this side is {MoveRelayerScript.Instance.thisSide}, playing side is {PlayingSide}");
-                    Debug.Log($"pre-received board state is {MoveRelayerScript.Instance.receivedBoardState}");
-                    // Wait until the other player has made a move
-                    // while (MoveRelayerScript.Instance.receivedBoardState == default ||
-                    //        MoveRelayerScript.Instance.receivedBoardState == null ||
-                    //        MoveRelayerScript.Instance.receivedBoardState.Length == 0) {
-                    //     Debug.Log(string.Join("", MoveRelayerScript.Instance.receivedBoardState));
-                    // }
-                    
-                    yield return new WaitUntil(() => MoveRelayerScript.Instance.receivedBoardState != default &&
-                                                     MoveRelayerScript.Instance.receivedBoardState != null &&
-                                                     MoveRelayerScript.Instance.receivedBoardState.Length != 0);
-                    Debug.Log("Received a move from enemy");
-                    // Add the received board state to the board state stack, clear it
-                    BoardStateScript.BoardStates.Add(new bool[MoveRelayerScript.Instance.receivedBoardState.Length]);
-                    Array.Copy(MoveRelayerScript.Instance.receivedBoardState,
-                               BoardStateScript.BoardStates.Last(),
-                               BoardStateScript.BoardStates.Last().Length);
+                if (MoveRelayerScript.Instance.ThisSide != PlayingSide) {
+                    yield return new WaitUntil(() => receivedEnemyBoardState != null);
+                    BoardStateScript.BoardStates.Add(receivedEnemyBoardState);
+                    receivedEnemyBoardState = null;
 
-                    // BoardStateScript.BoardStates.Add(MoveRelayerScript.Instance.receivedBoardState);
-                    Debug.Log(string.Join("", BoardStateScript.BoardStates.Last()));
-                    MoveRelayerScript.Instance.receivedBoardState = default;
-                    // Load in the board state
-                    Debug.Log(string.Join("", BoardStateScript.BoardStates.Last()));
+                    // Load in new board state
                     LoadBoardState(BoardStateScript.BoardStates.Last());
                     yield return StartCoroutine(ResetGameLoop());
                     yield break;
                 }
+
+                // if (MoveRelayerScript.Instance.thisSide != PlayingSide) {
+                //     Debug.Log($"this side is {MoveRelayerScript.Instance.thisSide}, playing side is {PlayingSide}");
+                //     Debug.Log($"pre-received board state is {MoveRelayerScript.Instance.receivedBoardState}");
+                //
+                //     yield return new WaitUntil(() => MoveRelayerScript.Instance.receivedBoardState != default &&
+                //                                      MoveRelayerScript.Instance.receivedBoardState != null &&
+                //                                      MoveRelayerScript.Instance.receivedBoardState.Length != 0);
+                //
+                //     Debug.Log("Received a move from enemy");
+                //
+                //     // Add the received board state to the board state stack, clear it
+                //     BoardStateScript.BoardStates.Add(new bool[MoveRelayerScript.Instance.receivedBoardState.Length]);
+                //     Array.Copy(MoveRelayerScript.Instance.receivedBoardState,
+                //                BoardStateScript.BoardStates.Last(),
+                //                BoardStateScript.BoardStates.Last().Length);
+                //
+                //     // BoardStateScript.BoardStates.Add(MoveRelayerScript.Instance.receivedBoardState);
+                //     Debug.Log(string.Join("", BoardStateScript.BoardStates.Last())); // somehow already empty
+                //     MoveRelayerScript.Instance.receivedBoardState = default;
+                //     // Load in the board state
+                //     // Debug.Log(string.Join("", BoardStateScript.BoardStates.Last()));
+                //     LoadBoardState(BoardStateScript.BoardStates.Last());
+                //     yield return StartCoroutine(ResetGameLoop());
+                //     yield break;
+                // }
             }
 
             // Evaluate all move functions
@@ -312,10 +321,15 @@ public class BoardScript : MonoBehaviour {
             UpdatePieceGameObjectPositions();
 
             // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
-            if (MoveRelayerManager.Instance.startMultiplayerGame) {
-                Debug.Log("Commit board state called");
-                MoveRelayerScript.Instance.CommitBoardState(BoardStateScript.BoardStates.Last());
+            if (MoveRelayerScript.Instance != null &&
+                MoveRelayerScript.Instance.StartMultiplayerGame) {
+                MoveRelayerScript.Instance.SendBoardState(BoardStateScript.BoardStates.Last(),
+                                                          MoveRelayerScript.Instance.Owner);
             }
+            // if (MoveRelayerManager.Instance.startMultiplayerGame) {
+            //     Debug.Log("Commit board state called");
+            //     MoveRelayerScript.Instance.SendBoardState(BoardStateScript.BoardStates.Last());
+            // }
 
             if (_extraMoves[PlayingSide] > 0) {
                 _extraMoves[PlayingSide] -= 1;
@@ -323,6 +337,10 @@ public class BoardScript : MonoBehaviour {
                 ResetPlayingSideBannedMoves();
                 ResetBanningMoveFlags();
                 SwitchPlayers();
+                if (MoveRelayerScript.Instance != null &&
+                    MoveRelayerScript.Instance.StartMultiplayerGame) {
+                    MoveRelayerScript.Instance.NetworkFlipPlayingSide();
+                }
             }
         }
     }
@@ -710,7 +728,8 @@ public class BoardScript : MonoBehaviour {
     }
 
     IEnumerator AwaitStartMultiplayer() {
-        yield return new WaitUntil(() => MoveRelayerManager.Instance.startMultiplayerGame);
+        yield return new WaitUntil(() => MoveRelayerScript.Instance != null &&
+                                         MoveRelayerScript.Instance.StartMultiplayerGame);
         SelectingMove = false;
         yield return ResetGameLoop();
     }

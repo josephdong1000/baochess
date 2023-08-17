@@ -82,11 +82,8 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 91075789486860398}
   _networkObjectCache: {fileID: 91075789486860398}
-  selectedSingleMoveName: 
-  selectedMultipleMoveName: 
-  clientNumber: 0
-  playingSide: 0
-  thisSide: 0
+  <StartMultiplayerGame>k__BackingField: 0
+  <PlayingSide>k__BackingField: 0
 --- !u!114 &3052462675537365838
 MonoBehaviour:
   m_ObjectHideFlags: 0
