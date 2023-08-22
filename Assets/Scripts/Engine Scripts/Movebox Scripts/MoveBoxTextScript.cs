@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Theme_Scripts;
+// using Theme_Scripts;
 using UnityEngine;
 
 public class MoveBoxTextScript : MonoBehaviour {
@@ -78,7 +78,7 @@ public class MoveBoxTextScript : MonoBehaviour {
         }
 
         ThemeChangeTextColorChange(ThemeManager.Theme.Baba);
-        ThemeManager.ThemePropertyChanged += ThemeChangeTextColorChange;
+        // ThemeManager.ThemePropertyChanged += ThemeChangeTextColorChange;
     }
 
     private void ThemeChangeTextColorChange(ThemeManager.Theme newvalue) {

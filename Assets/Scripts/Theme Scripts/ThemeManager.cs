@@ -3,25 +3,27 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace Theme_Scripts {
-    public delegate void ThemePropertyChangedDelegate(ThemeManager.Theme newValue);
+// namespace Theme_Scripts {
+    // public delegate void ThemePropertyChangedDelegate(ThemeManager.Theme newValue);
 
     public class ThemeManager : MonoBehaviour {
 
         private static Theme _currentTheme;
-        public static event ThemePropertyChangedDelegate ThemePropertyChanged;
+        // public static event ThemePropertyChangedDelegate ThemePropertyChanged;
 
-        public static Theme CurrentTheme {
-            get { return _currentTheme;}
-            private set {
-                if (value != _currentTheme) {
-                    CurrentTheme = value;
-                    if (ThemePropertyChanged != null) {
-                        ThemePropertyChanged(value); // Invoke event in setter
-                    }
-                }
-            }
-        }
+        // public static Theme CurrentTheme {
+        //     get { return _currentTheme;}
+        //     private set {
+        //         if (value != _currentTheme) {
+        //             CurrentTheme = value;
+        //             if (ThemePropertyChanged != null) {
+        //                 ThemePropertyChanged(value); // Invoke event in setter
+        //             }
+        //         }
+        //     }
+        // }
+        public static Theme CurrentTheme;
+        
         public static ThemeManager Instance;
         private static ThemeColorsManager _themeColorsManager; 
     
@@ -95,4 +97,4 @@ namespace Theme_Scripts {
             return (_themeColorsManager.defaultColor, _themeColorsManager.defaultColor);
         }
     }
-}
+// }

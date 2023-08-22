@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Theme_Scripts;
 using UnityEngine;
 
 public class PlayingIndicatorScript : MonoBehaviour {
