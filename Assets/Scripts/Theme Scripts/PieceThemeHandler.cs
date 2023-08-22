@@ -1,4 +1,5 @@
 using System;
+using Theme_Scripts;
 using UnityEngine;
 
 public class PieceThemeHandler : MonoBehaviour {
@@ -21,24 +22,23 @@ public class PieceThemeHandler : MonoBehaviour {
     [HideInInspector] public Color blackColor;
 
 
-    private ThemeColorsManager _themeColorsManager;
+    // private ThemeColorsManager _themeColorsManager;
     private ThemeManager.Theme _myTheme;
 
 
     private void Awake() {
-        _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
-        classicWhiteColor = _themeColorsManager.classicWhiteColor;
-        classicBlackColor = _themeColorsManager.classicBlackColor;
-        babaWhiteColor = _themeColorsManager.babaWhiteColor;
-        babaBlackColor = _themeColorsManager.babaBlackColor;
+        
+        (classicWhiteColor, classicBlackColor) = ThemeManager.Instance.GetThemePieceColor(ThemeManager.Theme.Classic); 
+        (babaWhiteColor, babaBlackColor) = ThemeManager.Instance.GetThemePieceColor(ThemeManager.Theme.Baba); 
+
         _myTheme = ThemeManager.Theme.None;
         UpdateSpriteAndColor();
     }
-    
+
     private void Update() {
         UpdateSpriteAndColor();
     }
-    
+
     private void UpdateSpriteAndColor() {
         if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
             _myTheme != ThemeManager.Theme.Classic) {

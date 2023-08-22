@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Theme_Scripts;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
@@ -80,26 +81,45 @@ public class EditorButtonScript : MonoBehaviour {
     private void UpdateThemeSpritesColors() {
         // Changes the editor button's default colors and highlight dot sprites based on the current theme
 
-        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
-            _myTheme != ThemeManager.Theme.Classic) {
-
-            highlightColor = _themeColorsManager.classicLightSquareColor;
-            unhighlightColor = _themeColorsManager.classicDarkSquareColor;
-            _whiteColor = _themeColorsManager.classicWhiteColor;
-            _blackColor = _themeColorsManager.classicBlackColor;
-            _spriteList = classicSpriteList;
+        if (ThemeManager.CurrentTheme != _myTheme) {
+            _myTheme = ThemeManager.CurrentTheme;
+            (_whiteColor, _blackColor) = ThemeManager.Instance.GetThemePieceColor();
             
-            _myTheme = ThemeManager.Theme.Classic;
-        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
-                   _myTheme != ThemeManager.Theme.Baba) {
-            
-            highlightColor = _themeColorsManager.babaLightSquareColor;
-            unhighlightColor = _themeColorsManager.babaDarkSquareColor;
-            _whiteColor = _themeColorsManager.babaWhiteColor;
-            _blackColor = _themeColorsManager.babaBlackColor;
-            _spriteList = babaSpriteList;
-
-            _myTheme = ThemeManager.Theme.Baba;
+            if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic) {
+                highlightColor = _themeColorsManager.classicLightSquareColor;
+                unhighlightColor = _themeColorsManager.classicDarkSquareColor;
+                _spriteList = classicSpriteList;
+            } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba) {
+                
+                highlightColor = _themeColorsManager.babaLightSquareColor;
+                unhighlightColor = _themeColorsManager.babaDarkSquareColor;
+                _spriteList = babaSpriteList;
+            } else {
+                throw new Exception("Invalid theme selected");
+            }
         }
+        
+        // if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
+        //     _myTheme != ThemeManager.Theme.Classic) {
+        //
+        //     highlightColor = _themeColorsManager.classicLightSquareColor;
+        //     unhighlightColor = _themeColorsManager.classicDarkSquareColor;
+        //     _spriteList = classicSpriteList;
+        //     // _whiteColor = _themeColorsManager.classicWhiteColor;
+        //     // _blackColor = _themeColorsManager.classicBlackColor;
+        //     
+        //     _myTheme = ThemeManager.Theme.Classic;
+        // } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
+        //            _myTheme != ThemeManager.Theme.Baba) {
+        //     
+        //     highlightColor = _themeColorsManager.babaLightSquareColor;
+        //     unhighlightColor = _themeColorsManager.babaDarkSquareColor;
+        //     _spriteList = babaSpriteList;
+        //     // _whiteColor = _themeColorsManager.babaWhiteColor;
+        //     // _blackColor = _themeColorsManager.babaBlackColor;
+        //
+        //     _myTheme = ThemeManager.Theme.Baba;
+        // }
+        
     }
 }

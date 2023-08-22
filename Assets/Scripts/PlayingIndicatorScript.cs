@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Theme_Scripts;
 using UnityEngine;
 
 public class PlayingIndicatorScript : MonoBehaviour {
-
     public float sidePadding;
-    
+
     private BoardScript _boardScript;
     private SpriteRenderer _spriteRenderer;
-    
+
     // Start is called before the first frame update
     void Start() {
         _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
@@ -17,14 +17,13 @@ public class PlayingIndicatorScript : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        if (_boardScript.BoardMode == ButtonController.Mode.Edit ) {
+    void Update() {
+        if (_boardScript.BoardMode == ButtonController.Mode.Edit) {
             _spriteRenderer.color = Color.white;
-        } else if (_boardScript.PlayingSide == PieceScript.Side.White) {
-            _spriteRenderer.color = _boardScript.whiteColor;
         } else {
-            _spriteRenderer.color = _boardScript.blackColor;
+            _spriteRenderer.color = _boardScript.PlayingSide == PieceScript.Side.White
+                ? ThemeManager.Instance.GetThemeColor().Item1
+                : ThemeManager.Instance.GetThemeColor().Item2;
         }
     }
 }

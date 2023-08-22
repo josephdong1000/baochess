@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Theme_Scripts;
 using UnityEngine;
 
 public class MoveBoxTextScript : MonoBehaviour {
@@ -59,6 +61,7 @@ public class MoveBoxTextScript : MonoBehaviour {
     };
 
     public static Dictionary<string, string> MoveDescriptionsPretty = new();
+    public static Color TextBaseColor;
 
     public void Awake() {
         QueenHex = ColorUtility.ToHtmlStringRGBA(queenColor);
@@ -73,6 +76,13 @@ public class MoveBoxTextScript : MonoBehaviour {
         foreach (var (moveName, moveDescription) in MoveDescriptionsRaw) {
             MoveDescriptionsPretty.Add(moveName, ColorMoveRichText(moveDescription));
         }
+
+        ThemeChangeTextColorChange(ThemeManager.Theme.Baba);
+        ThemeManager.ThemePropertyChanged += ThemeChangeTextColorChange;
+    }
+
+    private void ThemeChangeTextColorChange(ThemeManager.Theme newvalue) {
+        TextBaseColor = ThemeManager.Instance.GetThemeBaseTextColor(newvalue);
     }
 
     // public static string GenerateMoveDescription(string moveName) {
@@ -103,4 +113,5 @@ public class MoveBoxTextScript : MonoBehaviour {
         
         return moveDesc;
     }
+    
 }

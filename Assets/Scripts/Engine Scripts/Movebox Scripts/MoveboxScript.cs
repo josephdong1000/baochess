@@ -66,8 +66,9 @@ public class MoveboxScript : MonoBehaviour {
         if (_update) {
             StartCoroutine(ShowMoves());
         }
-
         _update = false;
+
+        // _textMeshPro.color = MoveBoxTextScript.TextBaseColor;
     }
 
     private void OnMouseOver() {
@@ -166,10 +167,9 @@ public class MoveboxScript : MonoBehaviour {
         _textMeshPro.text = $"<align=\"center\"><b>{spacedName}</b></align>\n";
         _textMeshPro.text +=
             $"<size=2px>{MoveBoxTextScript.MoveDescriptionsPretty[moveName]}";
-
+        
         // Debug.Log(string.Join("\", \"\"},\n {\"", MoveList.AllMoveNames));
-
-
+        
     }
     
 }

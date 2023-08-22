@@ -193,7 +193,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &195688703
 RectTransform:
   m_ObjectHideFlags: 0
@@ -953,16 +953,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd3cf974dc3643cda84e6e1fbc2d971a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
   classicWhiteColor: {r: 1, g: 1, b: 1, a: 1}
-  classicBlackColor: {r: 1, g: 1, b: 1, a: 1}
+  classicBlackColor: {r: 0, g: 0, b: 0, a: 1}
+  useClassicPieceColor: 0
   classicLightSquareColor: {r: 0.9490196, g: 0.88235295, b: 0.7647059, a: 1}
   classicDarkSquareColor: {r: 0.7647059, g: 0.627451, b: 0.50980395, a: 1}
   classicHoveredColor: {r: 0.9607843, g: 0.6627451, b: 0.105882354, a: 1}
+  classicTextColor: {r: 0, g: 0, b: 0, a: 1}
   babaWhiteColor: {r: 0.9490196, g: 0.37254903, b: 0.36078432, a: 1}
   babaBlackColor: {r: 0.4392157, g: 0.75686276, b: 0.7019608, a: 1}
+  useBabaPieceColor: 1
   babaLightSquareColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
   babaDarkSquareColor: {r: 0.105882354, g: 0.105882354, b: 0.105882354, a: 1}
   babaHoveredColor: {r: 0.9607843, g: 0.6627451, b: 0.105882354, a: 1}
+  babaTextColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}
 --- !u!1 &799802286
 GameObject:
   m_ObjectHideFlags: 0
@@ -1806,7 +1811,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: bd0e199d63dc94bd5bacf2eb6ee63fc6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5dc3e43dbd47040db9f059582ba5f88c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2663,6 +2668,10 @@ PrefabInstance:
     - target: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
       propertyPath: m_Name
       value: NetworkManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
