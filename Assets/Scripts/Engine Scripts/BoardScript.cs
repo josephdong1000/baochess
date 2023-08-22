@@ -241,7 +241,7 @@ public class BoardScript : MonoBehaviour {
             UpdatePieceCountReferences();
 
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.StartMultiplayerGame) {
+                MoveRelayerScript.Instance.startMultiplayerGame) {
                 // Receiving side correctly!
                 Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.ThisSide}");
 
@@ -249,6 +249,7 @@ public class BoardScript : MonoBehaviour {
 
                 if (MoveRelayerScript.Instance.ThisSide != PlayingSide) {
                     yield return new WaitUntil(() => receivedEnemyBoardState != null);
+                    Debug.Log("Received enemy board state");
                     BoardStateScript.BoardStates.Add(receivedEnemyBoardState);
                     receivedEnemyBoardState = null;
 
@@ -322,9 +323,9 @@ public class BoardScript : MonoBehaviour {
 
             // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.StartMultiplayerGame) {
+                MoveRelayerScript.Instance.startMultiplayerGame) {
                 MoveRelayerScript.Instance.SendBoardState(BoardStateScript.BoardStates.Last(),
-                                                          MoveRelayerScript.Instance.Owner);
+                                                          MoveRelayerScript.Instance.Owner.ClientId);
             }
             // if (MoveRelayerManager.Instance.startMultiplayerGame) {
             //     Debug.Log("Commit board state called");
@@ -338,7 +339,7 @@ public class BoardScript : MonoBehaviour {
                 ResetBanningMoveFlags();
                 SwitchPlayers();
                 if (MoveRelayerScript.Instance != null &&
-                    MoveRelayerScript.Instance.StartMultiplayerGame) {
+                    MoveRelayerScript.Instance.startMultiplayerGame) {
                     MoveRelayerScript.Instance.NetworkFlipPlayingSide();
                 }
             }
@@ -729,7 +730,7 @@ public class BoardScript : MonoBehaviour {
 
     IEnumerator AwaitStartMultiplayer() {
         yield return new WaitUntil(() => MoveRelayerScript.Instance != null &&
-                                         MoveRelayerScript.Instance.StartMultiplayerGame);
+                                         MoveRelayerScript.Instance.startMultiplayerGame);
         SelectingMove = false;
         yield return ResetGameLoop();
     }

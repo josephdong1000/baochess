@@ -4,10 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using FishNet;
 using FishNet.Connection;
+using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
+using FishNet.Transporting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
+using SceneManager = FishNet.Managing.Scened.SceneManager;
 
 public sealed class MoveRelayerScript : NetworkBehaviour {
     public static MoveRelayerScript Instance { get; private set; }
@@ -19,26 +23,72 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
 
     // [SyncObject(WritePermissions = WritePermission.ServerOnly)]
     // public readonly SyncList<NetworkConnection> ConnectedClients = new SyncList<NetworkConnection>();
-    [field: SyncObject(ReadPermissions = ReadPermission.Observers, WritePermissions = WritePermission.ServerOnly)]
-    public SyncList<NetworkConnection> ConnectedClients { get; } = new SyncList<NetworkConnection>();
+    // [field: SyncObject(ReadPermissions = ReadPermission.Observers, WritePermissions = WritePermission.ServerOnly)]
+    // public SyncList<NetworkConnection> ConnectedClients { get; } = new SyncList<NetworkConnection>();
 
-    [field: SyncVar] public bool StartMultiplayerGame { get; private set; }
+
+    [SyncObject(WritePermissions = WritePermission.ServerOnly)] private readonly SyncList<int> _connectedClients = new();
+    public List<int> ConnectedClients => (List<int>)_connectedClients.Collection;
+
+    [SyncVar, HideInInspector] public bool startMultiplayerGame;
 
     public PieceScript.Side ThisSide { get; private set; }
-    [field: SyncVar] public PieceScript.Side PlayingSide { get; private set; }
+    // [field: SyncVar] public PieceScript.Side PlayingSide { get; private set; }
+    [SyncVar] public int PlayingSideInt;
+
+    private SceneManager _sceneManager;
 
     public override void OnStartClient() {
         base.OnStartClient();
-        
         if (!base.IsOwner) {
-            Debug.Log("Disabled a move relayer script");
-            GetComponent<MoveRelayerScript>().enabled = false; // Deactivate this script if not client
+            Debug.Log($"Disabling move relay script for client {OwnerId}");
+            // GetComponent<MoveRelayerScript>().enabled = false; // Deactivate this script if not client
         } else {
-            Debug.Log("Adding a NetworkConnection client to ConnectedClients");
+            Debug.Log($"Setting singleton Instance to client {OwnerId}");
             Instance = this;
-            ServerAddConnectedClient(Owner);
+            // ServerAddConnectedClient(Owner);
         }
     }
+
+    public override void OnStartNetwork() {
+        base.OnStartNetwork();
+        
+        if (IsServer) {
+            Debug.Log("OnStartNetwork called for server");
+            startMultiplayerGame = false;
+            PlayingSideInt = 0;
+            _sceneManager = NetworkManager.SceneManager;
+            _sceneManager.OnClientPresenceChangeEnd += ChangeConnectedClientsEvent;
+            _connectedClients.OnChange += DetectStartGameEvent;
+        }
+        // if (IsClient && base.Owner.IsLocalClient) {
+        //     if (base.Owner.IsLocalClient) {
+        //         Debug.Log($"Setting singleton Instance to client {OwnerId}");
+        //                     Instance = this;
+        //     } else {
+        //         Debug.Log($"Disabling move relay script for client {OwnerId}");
+        //         GetComponent<MoveRelayerScript>().enabled = false;
+        //     }
+        // }
+    }
+
+    private void ChangeConnectedClientsEvent(ClientPresenceChangeEventArgs obj) {
+        if (obj.Added) {
+            _connectedClients.Add(obj.Connection.ClientId);
+        } else {
+            _connectedClients.Remove(obj.Connection.ClientId);
+        }
+    }
+
+    private void DetectStartGameEvent(SyncListOperation op, int index, int olditem, int newitem, bool asserver) {
+        if (op == SyncListOperation.Add && _connectedClients.Count == 2) {
+            ServerSetSides();
+            // PlayingSide = PieceScript.Side.White; // White starts the game
+            PlayingSideInt = 1;
+            startMultiplayerGame = true;
+        }
+    }
+
 
     // public override void OnStartServer() {
     //     // Called on the server after objects are initialized.
@@ -54,36 +104,37 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
     //     }
     // }
 
+    // [ServerRpc]
+    // public void ServerAddConnectedClient(NetworkConnection client) {
+    //     Debug.Log(IsServer);
+    //     Debug.Log($"ConnectedClients: {String.Join(", ", _connectedClients)}");
+    //     _connectedClients.Add(client.ClientId);
+    //     Debug.Log($"AddConnectedClient called on server with client {client}");
+    //     Debug.Log($"ConnectedClients: {String.Join(", ", _connectedClients)}");
+    //     
+    //     // Move this to a new thing
+    //     if (_connectedClients.Count == 2) {
+    //         Debug.Log("Server has received 2 clients");
+    //         ServerSetSides();
+    //         PlayingSide = PieceScript.Side.White; // White starts the game
+    //         startMultiplayerGame = true;
+    //     } else if (_connectedClients.Count > 2) {
+    //         throw new NotImplementedException("More than 2 clients in _connectedClients!");
+    //     }
+    // }
 
-    [ServerRpc]
-    public void ServerAddConnectedClient(NetworkConnection client) {
-        Debug.Log(IsServer);
-        Debug.Log($"ConnectedClients: {String.Join(", ", ConnectedClients)}");
-        ConnectedClients.Add(client);
-        Debug.Log($"AddConnectedClient called on server with client {client}");
-        Debug.Log($"ConnectedClients: {String.Join(", ", ConnectedClients)}");
-        if (ConnectedClients.Count == 2) {
-            Debug.Log("Server has received 2 clients");
-            ServerSetSides();
-            PlayingSide = PieceScript.Side.White; // White starts the game
-            StartMultiplayerGame = true;
-        } else if (ConnectedClients.Count > 2) {
-            throw new NotImplementedException("More than 2 clients in ConnectedClients!");
-        }
-    }
-    
-    public override void OnStopClient() {
-        base.OnStopClient();
-        if (base.IsOwner) {
-            Debug.Log($"Client {Owner} being removed");
-            ServerRemoveConnectedClient(Owner);
-        }
-    }
+    // public override void OnStopClient() {
+    //     base.OnStopClient();
+    //     if (base.IsOwner) {
+    //         Debug.Log($"Client {Owner} being removed");
+    //         ServerRemoveConnectedClient(Owner);
+    //     }
+    // }
 
-    [ServerRpc]
-    public void ServerRemoveConnectedClient(NetworkConnection client) {
-        ConnectedClients.Remove(client);
-    }
+    // [ServerRpc]
+    // public void ServerRemoveConnectedClient(NetworkConnection client) {
+    //     _connectedClients.Remove(client.ClientId);
+    // }
 
     // public override void OnStopServer() {
     //     // Called on the server right before objects are de-initialized.
@@ -107,8 +158,8 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
         }
 
         // Assign those sides
-        SetClientSide(ConnectedClients[0], sides.Item1);
-        SetClientSide(ConnectedClients[1], sides.Item2);
+        SetClientSide(ServerManager.Clients[_connectedClients[0]], sides.Item1);
+        SetClientSide(ServerManager.Clients[_connectedClients[1]], sides.Item2);
     }
 
     [TargetRpc]
@@ -116,15 +167,23 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
         ThisSide = side;
     }
 
-    private void Start() {
-        if (IsServer) {
-            StartMultiplayerGame = false;
-        }
-    }
+    // private void Start() {
+    //     if (IsServer) {
+    //         startMultiplayerGame = false;
+    //     }
+    // }
 
     private void Update() {
-        if (IsServer) {
-            RemoveNullClients();
+        // if (IsServer) {
+        //     RemoveNullClients();
+        // }
+
+        if (Input.GetKeyDown(KeyCode.Z)) {
+            Debug.Log(String.Join(", ", _connectedClients));
+            Debug.Log($"Is client: {IsClient}");
+            Debug.Log($"Client ID and IsOwner: {(OwnerId, IsOwner)}");
+            Debug.Log($"Start multi: {startMultiplayerGame}");
+            Debug.Log("-----");
         }
     }
 
@@ -134,15 +193,13 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
     /// Called from any client onto the server. Triggers a TargetRpc to send the board information
     /// to the other client
     /// </summary>
-    /// <param name="boardState">The boardstate bool[] array</param>
-    /// <param name="playedSide">The side that just played the move</param>
     [ServerRpc]
-    public void SendBoardState(bool[] boardState, NetworkConnection callingClient) {
+    public void SendBoardState(bool[] boardState, int callingClientID) {
         // MoveRelayerManager.Instance.CommitBoardStateManager(boardState, this);
-        if (ConnectedClients[0] == callingClient) {
-            ReceiveBoardState(ConnectedClients[1], boardState);
+        if (_connectedClients[0] == callingClientID) {
+            ReceiveBoardState(ServerManager.Clients[_connectedClients[1]], boardState);
         } else {
-            ReceiveBoardState(ConnectedClients[0], boardState);
+            ReceiveBoardState(ServerManager.Clients[_connectedClients[0]], boardState);
         }
 
         throw new NotImplementedException();
@@ -150,7 +207,8 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
 
     [ServerRpc]
     public void NetworkFlipPlayingSide() {
-        PlayingSide = BoardScript.InvertSide(PlayingSide);
+        // PlayingSide = BoardScript.InvertSide(PlayingSide);
+        PlayingSideInt *= -1;
     }
 
     // [Client(RequireOwnership = false)]
@@ -168,8 +226,8 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
     }
 
 
-    [ServerRpc]
-    public void RemoveNullClients() {
-        ConnectedClients.RemoveAll(item => item == null);
-    }
+    // [ServerRpc]
+    // public void RemoveNullClients() {
+    //     _connectedClients.RemoveAll(item => item == null);
+    // }
 }
