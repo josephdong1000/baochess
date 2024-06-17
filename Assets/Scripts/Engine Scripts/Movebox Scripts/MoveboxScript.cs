@@ -68,7 +68,7 @@ public class MoveboxScript : MonoBehaviour {
         }
         _update = false;
 
-        // _textMeshPro.color = MoveBoxTextScript.TextBaseColor;
+        _textMeshPro.color = ThemeManager.Instance.GetThemeBaseTextColor();
     }
 
     private void OnMouseOver() {

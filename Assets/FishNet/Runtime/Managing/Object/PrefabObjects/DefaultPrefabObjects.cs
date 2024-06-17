@@ -2,12 +2,13 @@ using FishNet.Documenting;
 using FishNet.Object.Helping;
 using System.Collections.Generic;
 using UnityEngine;
+using GameKit.Dependencies.Utilities;
 #if UNITY_EDITOR
 using FishNet.Editing;
 using UnityEditor;
 #endif
 using FishNet.Object;
- 
+
 namespace FishNet.Managing.Object
 {
 
@@ -40,7 +41,7 @@ namespace FishNet.Managing.Object
                     continue;
 
                 string pathAndName = $"{AssetDatabase.GetAssetPath(n.gameObject)}{n.gameObject.name}";
-                ulong hashcode = Hashing.GetStableHash64(pathAndName);
+                ulong hashcode = Hashing.GetStableHashU64(pathAndName);
                 //Already set.
                 if (n.AssetPathHash == hashcode)
                     continue;

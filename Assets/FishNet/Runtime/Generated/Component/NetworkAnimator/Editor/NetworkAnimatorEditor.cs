@@ -14,7 +14,7 @@ namespace FishNet.Component.Animating.Editing
     {
         private SerializedProperty _animator;
         private SerializedProperty _interpolation;
-        //private SerializedProperty _synchronizeInterval;
+        private SerializedProperty _synchronizeWhenDisabled;
         private SerializedProperty _smoothFloats;
         private SerializedProperty _clientAuthoritative;
         private SerializedProperty _sendToOwner;
@@ -23,13 +23,13 @@ namespace FishNet.Component.Animating.Editing
 
         protected virtual void OnEnable()
         {
-            _animator = serializedObject.FindProperty("_animator");
-            _interpolation = serializedObject.FindProperty("_interpolation");
-            //_synchronizeInterval = serializedObject.FindProperty("_synchronizeInterval");
-            _smoothFloats = serializedObject.FindProperty("_smoothFloats");
+            _animator = serializedObject.FindProperty(nameof(_animator));
+            _interpolation = serializedObject.FindProperty(nameof(_interpolation));
+            _synchronizeWhenDisabled = serializedObject.FindProperty(nameof(_synchronizeWhenDisabled));
+            _smoothFloats = serializedObject.FindProperty(nameof(_smoothFloats));
 
-            _clientAuthoritative = serializedObject.FindProperty("_clientAuthoritative");
-            _sendToOwner = serializedObject.FindProperty("_sendToOwner");
+            _clientAuthoritative = serializedObject.FindProperty(nameof(_clientAuthoritative));
+            _sendToOwner = serializedObject.FindProperty(nameof(_sendToOwner));
         }
 
         public override void OnInspectorGUI()
@@ -41,15 +41,16 @@ namespace FishNet.Component.Animating.Editing
             EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour(na), typeof(NetworkAnimator), false);
             GUI.enabled = true;
 
-            
-#pragma warning disable CS0162 // Unreachable code detected
-                EditorGUILayout.HelpBox(EditingConstants.PRO_ASSETS_LOCKED_TEXT, MessageType.Warning);
-#pragma warning restore CS0162 // Unreachable code detected
+//            
+//#pragma warning disable CS0162 // Unreachable code detected
+//                EditorGUILayout.HelpBox(EditingConstants.PRO_ASSETS_LOCKED_TEXT, MessageType.Warning);
+//#pragma warning restore CS0162 // Unreachable code detected
 
             //Animator
             EditorGUILayout.LabelField("Animator", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(_animator);
+            EditorGUILayout.PropertyField(_synchronizeWhenDisabled);
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 
@@ -57,7 +58,6 @@ namespace FishNet.Component.Animating.Editing
             EditorGUILayout.LabelField("Synchronization Processing", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(_interpolation);
-            //EditorGUILayout.PropertyField(_synchronizeInterval, new GUIContent("Synchronize Interval", "How often to synchronize this animator."));
             EditorGUILayout.PropertyField(_smoothFloats);
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
@@ -165,6 +165,7 @@ namespace FishNet.Component.Animating.Editing
                                 else
                                     na.IgnoredParameters.Add(parameterName);
                             }
+                            UnityEditor.EditorUtility.SetDirty(target);
                         }
 
                         z++;

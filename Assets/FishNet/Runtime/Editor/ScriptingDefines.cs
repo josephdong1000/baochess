@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace FishNet
@@ -10,7 +11,25 @@ namespace FishNet
         [InitializeOnLoadMethod]
         public static void AddDefineSymbols()
         {
-            string currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            // Get data about current target group
+            bool standaloneAndServer = false;
+            BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+            if (buildTargetGroup == BuildTargetGroup.Standalone)
+            {
+                StandaloneBuildSubtarget standaloneSubTarget = EditorUserBuildSettings.standaloneBuildSubtarget;
+                if (standaloneSubTarget == StandaloneBuildSubtarget.Server)
+                    standaloneAndServer = true;
+            }
+
+            // Prepare named target, depending on above stuff
+            NamedBuildTarget namedBuildTarget;
+            if (standaloneAndServer)
+                namedBuildTarget = NamedBuildTarget.Server;
+            else
+                namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup);
+
+            string currentDefines = PlayerSettings.GetScriptingDefineSymbols(namedBuildTarget);
             /* Convert current defines into a hashset. This is so we can
              * determine if any of our defines were added. Only save playersettings
              * when a define is added. */
@@ -22,7 +41,7 @@ namespace FishNet
 
             string proDefine = "FISHNET_PRO";
             string versionPrefix = "FISHNET_V";
-            string thisVersion = $"{versionPrefix}3";
+            string thisVersion = $"{versionPrefix}4";
             string[] fishNetDefines = new string[]
             {
                 "FISHNET",
@@ -34,6 +53,8 @@ namespace FishNet
             foreach (string item in fishNetDefines)
                 modified |= definesHs.Add(item);
 
+            //Remove old prediction defines.
+            modified |= definesHs.Remove("PREDICTION_V2");
             /* Remove pro define if not on pro. This might look a little
              * funny because the code below varies depending on if pro or not. */
             
@@ -66,7 +87,7 @@ namespace FishNet
             {
                 Debug.Log("Added or removed Fish-Networking defines within player settings.");
                 string changedDefines = string.Join(";", definesHs);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, changedDefines);
+                PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, changedDefines);
             }
         }
     }

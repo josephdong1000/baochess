@@ -16,6 +16,10 @@ using SceneManager = FishNet.Managing.Scened.SceneManager;
 public sealed class MoveRelayerScript : NetworkBehaviour {
     public static MoveRelayerScript Instance { get; private set; }
 
+    private void Awake() {
+        
+    }
+
     // [SyncVar(WritePermissions = WritePermission.ClientUnsynchronized), HideInInspector]
     // public bool[] receivedBoardState = default;
 
@@ -27,14 +31,16 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
     // public SyncList<NetworkConnection> ConnectedClients { get; } = new SyncList<NetworkConnection>();
 
 
-    [SyncObject(WritePermissions = WritePermission.ServerOnly)] private readonly SyncList<int> _connectedClients = new();
+    // [SyncObject(WritePermissions = WritePermission.ServerOnly)] private readonly SyncList<int> _connectedClients = new();
+    private readonly SyncList<int> _connectedClients = new();
     public List<int> ConnectedClients => (List<int>)_connectedClients.Collection;
 
-    [SyncVar, HideInInspector] public bool startMultiplayerGame;
+    [HideInInspector] public readonly SyncVar<bool> startMultiplayerGame = new();
 
     public PieceScript.Side ThisSide { get; private set; }
     // [field: SyncVar] public PieceScript.Side PlayingSide { get; private set; }
-    [SyncVar] public int PlayingSideInt;
+    // [SyncVar] public int PlayingSideInt;
+    public readonly SyncVar<int> PlayingSideInt = new();
 
     private SceneManager _sceneManager;
 
@@ -55,8 +61,8 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
         
         if (IsServer) {
             Debug.Log("OnStartNetwork called for server");
-            startMultiplayerGame = false;
-            PlayingSideInt = 0;
+            startMultiplayerGame.Value = false;
+            PlayingSideInt.Value = 0;
             _sceneManager = NetworkManager.SceneManager;
             _sceneManager.OnClientPresenceChangeEnd += ChangeConnectedClientsEvent;
             _connectedClients.OnChange += DetectStartGameEvent;
@@ -84,8 +90,8 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
         if (op == SyncListOperation.Add && _connectedClients.Count == 2) {
             ServerSetSides();
             // PlayingSide = PieceScript.Side.White; // White starts the game
-            PlayingSideInt = 1;
-            startMultiplayerGame = true;
+            PlayingSideInt.Value = 1;
+            startMultiplayerGame.Value = true;
         }
     }
 
@@ -208,7 +214,7 @@ public sealed class MoveRelayerScript : NetworkBehaviour {
     [ServerRpc]
     public void NetworkFlipPlayingSide() {
         // PlayingSide = BoardScript.InvertSide(PlayingSide);
-        PlayingSideInt *= -1;
+        PlayingSideInt.Value *= -1;
     }
 
     // [Client(RequireOwnership = false)]

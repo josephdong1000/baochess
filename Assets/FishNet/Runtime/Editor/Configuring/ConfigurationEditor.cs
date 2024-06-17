@@ -3,7 +3,7 @@ using FishNet.Editing.PrefabCollectionGenerator;
 using FishNet.Object;
 using FishNet.Utility.Extension;
 using FishNet.Utility.Performance;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace FishNet.Editing
     public class ConfigurationEditor : EditorWindow
     {
 
-        [MenuItem("Fish-Networking/Configuration", false, 0)]
+        [MenuItem("Tools/Fish-Networking/Configuration", false, 0)]
         public static void ShowConfiguration()
         {
             SettingsService.OpenProjectSettings("Project/Fish-Networking/Configuration");
@@ -25,43 +25,75 @@ namespace FishNet.Editing
     public class DeveloperMenu : MonoBehaviour
     {
         #region const.
-        private const string PREDICTIONV2_DEFINE = "PREDICTION_V2";
+        private const string STABLE_DEFINE = "FISHNET_STABLE_MODE";
+        private const string PREDICTION_1_DEFINE = "PREDICTION_1";
         private const string QOL_ATTRIBUTES_DEFINE = "DISABLE_QOL_ATTRIBUTES";
         private const string DEVELOPER_ONLY_WARNING = "If you are not a developer or were not instructed to do this by a developer things are likely to break. You have been warned.";
         #endregion
 
+
+        #region Release mode.
+#if !FISHNET_STABLE_MODE
+        [MenuItem("Tools/Fish-Networking/Switch to Stable", false, -1101)]
+        private static void SwitchToStable()
+        {
+            bool result = RemoveOrAddDefine(STABLE_DEFINE, false);
+            if (result)
+                Debug.LogWarning($"Fish-Networking has been switched to Stable. Please note that experimental features may not function in this mode.");
+        }
+#else
+        [MenuItem("Tools/Fish-Networking/Switch to Beta", false, -1101)]
+        private static void SwitchToBeta()
+        {
+            bool result = RemoveOrAddDefine(STABLE_DEFINE, true);
+            if (result)
+                Debug.LogWarning($"Fish-Networking has been switched to Beta.");
+
+        }
+#endif
+        #endregion
+
         #region PredictionV2.
-        [MenuItem("Fish-Networking/Developer/PredictionV2/Enable", false, -999)]
+#if PREDICTION_1
+        [MenuItem("Tools/Fish-Networking/Utility/Prediction/Switch To Prediction 2", false, -998)]
         private static void EnablePredictionV2()
         {
-            bool result = RemoveOrAddDefine(PREDICTIONV2_DEFINE, false);
+            bool result = RemoveOrAddDefine(PREDICTION_1_DEFINE, true);
             if (result)
-                Debug.LogWarning($"PredictionV2 has been enabled. {DEVELOPER_ONLY_WARNING}");
+                Debug.Log("Prediction 2 has been enabled.");
         }
-        [MenuItem("Fish-Networking/Developer/PredictionV2/Disable", false, -998)]
+#else
+        [MenuItem("Tools/Fish-Networking/Utility/Prediction/Switch To Prediction 1", false, -998)]
         private static void DisablePredictionV2()
         {
-            bool result = RemoveOrAddDefine(PREDICTIONV2_DEFINE, true);
+            bool result = RemoveOrAddDefine(PREDICTION_1_DEFINE, false);
             if (result)
-                Debug.Log("PredictionV2 has been disabled.");
+            {
+                Debug.Log("Prediction 1 has been enabled.");
+                Debug.LogWarning($"Please note that Prediction 1 is no longer supported and will be removed in FishNet 5.");
+            }
         }
+#endif
         #endregion
 
         #region QOL Attributes
-        [MenuItem("Fish-Networking/Developer/Quality of Life Attributes/Enable", false, -999)]
+#if DISABLE_QOL_ATTRIBUTES
+        [MenuItem("Tools/Fish-Networking/Utility/Quality of Life Attributes/Enable", false, -999)]
         private static void EnableQOLAttributes()
         {
             bool result = RemoveOrAddDefine(QOL_ATTRIBUTES_DEFINE, true);
             if (result)
                 Debug.LogWarning($"Quality of Life Attributes have been enabled.");
         }
-        [MenuItem("Fish-Networking/Developer/Quality of Life Attributes/Disable", false, -998)]
+#else
+        [MenuItem("Tools/Fish-Networking/Utility/Quality of Life Attributes/Disable", false, -998)]
         private static void DisableQOLAttributes()
         {
             bool result = RemoveOrAddDefine(QOL_ATTRIBUTES_DEFINE, false);
             if (result)
                 Debug.LogWarning($"Quality of Life Attributes have been disabled. {DEVELOPER_ONLY_WARNING}");
         }
+#endif
         #endregion
 
 
@@ -101,7 +133,7 @@ namespace FishNet.Editing
         /// <summary>
         /// Rebuilds sceneIds for open scenes.
         /// </summary>
-        [MenuItem("Fish-Networking/Rebuild SceneIds", false, 20)]
+        [MenuItem("Tools/Fish-Networking/Rebuild SceneIds", false, 20)]
         public static void RebuildSceneIds()
         {
 #if PARRELSYNC
@@ -111,26 +143,33 @@ namespace FishNet.Editing
                 return;
             }
 #endif
-            int generatedCount = 0;
+            if (ApplicationState.IsPlaying())
+            {
+                Debug.Log($"SceneIds cannot be rebuilt while in play mode.");
+                return;
+            }
+
+            int checkedObjects = 0;
+            int checkedScenes = 0;
+            int changedObjects = 0;
+
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
                 Scene s = SceneManager.GetSceneAt(i);
-
-                List<NetworkObject> nobs = CollectionCaches<NetworkObject>.RetrieveList();
-                Scenes.GetSceneNetworkObjects(s, false, ref nobs);
-                int nobCount = nobs.Count;
-                for (int z = 0; z < nobCount; z++)
+                if (!s.isLoaded)
                 {
-                    NetworkObject nob = nobs[z];
-                    nob.TryCreateSceneID();
-                    EditorUtility.SetDirty(nob);
+                    Debug.Log($"Skipped scene {s.name} because it is not loaded.");
+                    continue;
                 }
-                generatedCount += nobCount;
 
-                CollectionCaches<NetworkObject>.Store(nobs);
+                checkedScenes++;
+                NetworkObject.CreateSceneId(s, out int changed, out int found);
+                checkedObjects += found;
+                changedObjects += changed;
             }
 
-            Debug.Log($"Generated sceneIds for {generatedCount} objects over {SceneManager.sceneCount} scenes. Please save your open scenes.");
+            string saveText = (changedObjects > 0) ? " Please save your open scenes." : string.Empty;
+            Debug.Log($"SceneIds were generated for {changedObjects} object(s) over {checkedScenes} scene(s). {checkedObjects} object(s) were checked in total..{saveText}");
         }
 
 
@@ -141,7 +180,7 @@ namespace FishNet.Editing
         /// <summary>
         /// Rebuilds the DefaultPrefabsCollection file.
         /// </summary>
-        [MenuItem("Fish-Networking/Refresh Default Prefabs", false, 22)]
+        [MenuItem("Tools/Fish-Networking/Refresh Default Prefabs", false, 22)]
         public static void RebuildDefaultPrefabs()
         {
 #if PARRELSYNC
@@ -163,7 +202,7 @@ namespace FishNet.Editing
         /// <summary>
         /// Iterates all network object prefabs in the project and open scenes, removing NetworkObject components which exist multiple times on a single object.
         /// </summary>
-        [MenuItem("Fish-Networking/Remove Duplicate NetworkObjects", false, 21)]
+        [MenuItem("Tools/Fish-Networking/Remove Duplicate NetworkObjects", false, 21)]
 
         public static void RemoveDuplicateNetworkObjects()
         {
@@ -189,17 +228,8 @@ namespace FishNet.Editing
                 Scene s = SceneManager.GetSceneAt(i);
 
                 List<NetworkObject> nobs = CollectionCaches<NetworkObject>.RetrieveList();
-                Scenes.GetSceneNetworkObjects(s, false, ref nobs);
-                int nobsCount = nobs.Count;
-                for (int z = 0; z < nobsCount; z++)
-                {
-                    NetworkObject nob = nobs[z];
-                    nob.TryCreateSceneID();
-                    EditorUtility.SetDirty(nob);
-                }
-                for (int z = 0; z < nobsCount; z++)
-                    foundNobs.Add(nobs[i]);
-
+                Scenes.GetSceneNetworkObjects(s, false, false, true, ref nobs);
+                foundNobs.AddRange(nobs);
                 CollectionCaches<NetworkObject>.Store(nobs);
             }
 
@@ -211,8 +241,10 @@ namespace FishNet.Editing
                 if (count > 0)
                     removed += count;
             }
-
-            Debug.Log($"Removed {removed} duplicate NetworkObjects. Please save your open scenes and project.");
+            
+            Debug.Log($"Removed {removed} duplicate NetworkObjects.");
+            if (removed > 0)
+                RebuildSceneIdMenu.RebuildSceneIds();
         }
 
     }

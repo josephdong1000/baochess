@@ -15,13 +15,13 @@ namespace FishNet.Transporting
         ObjectSpawn = 3,
         ObjectDespawn = 4,
         PredictedSpawnResult = 5,
-        SyncVar = 7,
+        SyncType = 7,
         ServerRpc = 8,
         ObserversRpc = 9,
         TargetRpc = 10,
         OwnershipChange = 11,
         Broadcast = 12,
-        SyncObject = 13,
+        UNUSED = 13,
         PingPong = 14,
         Replicate = 15,
         Reconcile = 16,
@@ -29,6 +29,7 @@ namespace FishNet.Transporting
         TimingUpdate = 18,
         NetworkLODUpdate = 19,
         StateUpdate = 20,
+        Version = 21,
     }
 
 }

@@ -15,17 +15,13 @@ namespace FishNet.Editing
 
         private const string SHOWED_GETTING_STARTED = "ShowedFishNetGettingStarted";
 
-        [MenuItem("Fish-Networking/Getting Started")]
+        [MenuItem("Tools/Fish-Networking/Getting Started")]
         public static void GettingStartedMenu()
         {
             FishNetGettingStartedEditor window = (FishNetGettingStartedEditor)EditorWindow.GetWindow(typeof(FishNetGettingStartedEditor));
             window.position = new Rect(0, 0, 320, 355);
             Rect mainPos;
-#if UNITY_2020_1_OR_NEWER
             mainPos = EditorGUIUtility.GetMainWindowPosition();
-#else
-            mainPos = new Rect(Vector2.zero, Vector2.zero);
-#endif
             var pos = window.position;  
             float w = (mainPos.width - pos.width) * 0.5f;
             float h = (mainPos.height - pos.height) * 0.5f;
@@ -127,10 +123,10 @@ namespace FishNet.Editing
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("FishNet Pro", GUILayout.Width(this.position.width * 0.485f)))
-            {
-                Application.OpenURL("https://fish-networking.gitbook.io/docs/master/pro");
-            }
+            //if (GUILayout.Button("FishNet Pro", GUILayout.Width(this.position.width * 0.485f)))
+            //{
+            //    Application.OpenURL("https://fish-networking.gitbook.io/docs/master/pro");
+            //}
 
             if (GUILayout.Button("Github", GUILayout.Width(this.position.width * 0.485f)))
             {
@@ -139,15 +135,15 @@ namespace FishNet.Editing
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Pro Downloads", GUILayout.Width(this.position.width * 0.485f)))
-            {
-                Application.OpenURL("https://www.firstgeargames.com/");
-            }
+            //if (GUILayout.Button("Pro Downloads", GUILayout.Width(this.position.width * 0.485f)))
+            //{
+            //    Application.OpenURL("https://www.firstgeargames.com/");
+            //}
 
-            if (GUILayout.Button("Examples", GUILayout.Width(this.position.width * 0.485f)))
-            {
-                Application.OpenURL("https://fish-networking.gitbook.io/docs/manual/tutorials/example-projects");
-            }
+            //if (GUILayout.Button("Examples", GUILayout.Width(this.position.width * 0.485f)))
+            //{
+            //    Application.OpenURL("https://fish-networking.gitbook.io/docs/manual/tutorials/example-projects");
+            //}
             EditorGUILayout.EndHorizontal();
 
             //GUILayout.Space(20);

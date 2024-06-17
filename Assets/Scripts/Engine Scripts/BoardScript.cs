@@ -241,7 +241,7 @@ public class BoardScript : MonoBehaviour {
             UpdatePieceCountReferences();
 
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.startMultiplayerGame) {
+                MoveRelayerScript.Instance.startMultiplayerGame.Value) {
                 // Receiving side correctly!
                 Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.ThisSide}");
 
@@ -323,7 +323,7 @@ public class BoardScript : MonoBehaviour {
 
             // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.startMultiplayerGame) {
+                MoveRelayerScript.Instance.startMultiplayerGame.Value) {
                 MoveRelayerScript.Instance.SendBoardState(BoardStateScript.BoardStates.Last(),
                                                           MoveRelayerScript.Instance.Owner.ClientId);
             }
@@ -339,7 +339,7 @@ public class BoardScript : MonoBehaviour {
                 ResetBanningMoveFlags();
                 SwitchPlayers();
                 if (MoveRelayerScript.Instance != null &&
-                    MoveRelayerScript.Instance.startMultiplayerGame) {
+                    MoveRelayerScript.Instance.startMultiplayerGame.Value) {
                     MoveRelayerScript.Instance.NetworkFlipPlayingSide();
                 }
             }
@@ -730,7 +730,7 @@ public class BoardScript : MonoBehaviour {
 
     IEnumerator AwaitStartMultiplayer() {
         yield return new WaitUntil(() => MoveRelayerScript.Instance != null &&
-                                         MoveRelayerScript.Instance.startMultiplayerGame);
+                                         MoveRelayerScript.Instance.startMultiplayerGame.Value);
         SelectingMove = false;
         yield return ResetGameLoop();
     }

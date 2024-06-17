@@ -1,5 +1,5 @@
 ﻿using FishNet.Transporting;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace FishNet.Component.Prediction
 {
     internal class PredictedObjectSpectatorSmoother
     {
-#if !PREDICTION_V2
+#if PREDICTION_1
         #region Types.
         /// <summary>
         /// Data on a goal to move towards.
@@ -414,7 +414,7 @@ namespace FishNet.Component.Prediction
         {
             if (_interpolation == 0)
                 return false;
-            if (_predictedObject.IsPredictingOwner() || _predictedObject.IsServer)
+            if (_predictedObject.IsPredictingOwner() || _predictedObject.IsServerStarted)
                 return false;
 
             return true;

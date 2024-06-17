@@ -110,7 +110,7 @@ namespace FishNet.Component.Observing
 
             if (_networkManager == null)
             {
-                NetworkManager.StaticLogError($"NetworkManager not found on object or within parent of {gameObject.name}. The {GetType().Name} must be placed on or beneath a NetworkManager.");
+                _networkManager.LogError($"NetworkManager not found on object or within parent of {gameObject.name}. The {GetType().Name} must be placed on or beneath a NetworkManager.");
                 return;
             }
 
@@ -132,20 +132,30 @@ namespace FishNet.Component.Observing
         private void OutputNewGridCollections(out GridEntry gridEntry, out HashSet<GridEntry> gridEntries)
         {
             const int cacheCount = 100;
-            //Build caches if needed.
-            if (_gridEntryHashSetCache.Count == 0)
+
+
+            if (!_gridEntryHashSetCache.TryPop(out gridEntries))
+            {
+                BuildGridEntryHashSetCache();
+                gridEntries = new();
+            }
+
+            if (!_gridEntryCache.TryPop(out gridEntry))
+            {
+                BuildGridEntryCache();
+                gridEntry = new();
+            }
+
+            void BuildGridEntryHashSetCache()
             {
                 for (int i = 0; i < cacheCount; i++)
                     _gridEntryHashSetCache.Push(new HashSet<GridEntry>());
             }
-            if (_gridEntryCache.Count == 0)
+            void BuildGridEntryCache()
             {
                 for (int i = 0; i < cacheCount; i++)
                     _gridEntryCache.Push(new GridEntry());
             }
-
-            gridEntry = _gridEntryCache.Pop();
-            gridEntries = _gridEntryHashSetCache.Pop();
         }
 
         /// <summary>

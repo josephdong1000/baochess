@@ -8,7 +8,7 @@ using FishNet.Object.Helping;
 using FishNet.Transporting;
 using MonoFN.Cecil;
 using MonoFN.Cecil.Cil;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -192,7 +192,7 @@ namespace FishNet.CodeGenerating.Processing.Rpc
             foreach (ParameterDefinition pd in methodDef.Parameters)
                 sb.Append(pd.ParameterType.FullName);
 
-            return $"{methodDef.Name}_{sb.ToString().GetStableHash32()}";
+            return $"{methodDef.Name}_{sb.ToString().GetStableHashU32()}";
         }
 
         /// <summary>
@@ -218,10 +218,7 @@ namespace FishNet.CodeGenerating.Processing.Rpc
                 {
                     RpcType rpcType = base.GetClass<AttributeHelper>().GetRpcAttributeType(customAttribute);
                     if (rpcType != RpcType.None)
-                    {
                         count++;
-                        break;
-                    }
                 }
             }
 
@@ -384,7 +381,7 @@ namespace FishNet.CodeGenerating.Processing.Rpc
 
             VariableDefinition channelVariableDef = CreateAndPopulateChannelVariable(writerMd, channelParameterDef);
             /* Create a local PooledWriter variable. */
-            //Default value for data lenght.
+            //Default value for data length.
             int dataLength = -1;
             //Go through each attribute and see if a larger data length is specified.
             foreach (AttributeData ad in attributeDatas)

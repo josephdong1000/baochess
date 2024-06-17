@@ -1,10 +1,9 @@
-﻿using FishNet.Documenting;
+﻿using FishNet.CodeGenerating;
+using FishNet.Documenting;
 using FishNet.Object.Helping;
-using FishNet.Object.Synchronizing;
 using FishNet.Object.Synchronizing.Internal;
 using FishNet.Serializing;
 using FishNet.Serializing.Helping;
-using FishNet.Transporting;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,6 +12,7 @@ using UnityEngine;
 namespace FishNet.Object.Synchronizing
 {
     [APIExclude]
+    [System.Serializable]
     [StructLayout(LayoutKind.Auto, CharSet = CharSet.Auto)]
     public class SyncVar<T> : SyncBase
     {
@@ -35,9 +35,47 @@ namespace FishNet.Object.Synchronizing
 
         #region Public.
         /// <summary>
+        /// Gets and sets the current value for this SyncVar.
+        /// </summary>
+        public T Value
+        {
+            get => _value;
+            set => SetValue(value, true);
+        }
+        ///// <summary>
+        ///// Sets the current value for this SyncVar while sending it immediately.
+        ///// </summary>
+        //public T ValueRpc
+        //{
+        //    set => SetValue(value, true, true);
+        //}
+        ///// <summary>
+        ///// Gets the current value for this SyncVar while marking it dirty. This could be useful to change properties or fields on a reference type SyncVar and have the SyncVar be dirtied after.
+        ///// </summary>
+        //public T ValueDirty
+        //{
+        //    get
+        //    {
+        //        base.Dirty();
+        //        return _value;
+        //    }
+        //}
+        ///// <summary>
+        ///// Gets the current value for this SyncVar while sending it imediately. This could be useful to change properties or fields on a reference type SyncVar and have the SyncVar send after.
+        ///// </summary>
+        //public T ValueDirtyRpc
+        //{
+        //    get
+        //    {
+        //        base.Dirty(true);
+        //        return _value;
+        //    }
+        //}
+        /// <summary>
         /// Called when the SyncDictionary changes.
         /// </summary>
-        public event Action<T, T, bool> OnChange;
+        public event OnChanged OnChange;
+        public delegate void OnChanged(T prev, T next, bool asServer);
         #endregion
 
         #region Private.
@@ -60,41 +98,55 @@ namespace FishNet.Object.Synchronizing
         /// <summary>
         /// Current value on the server, or client.
         /// </summary>
+        [SerializeField]
         private T _value;
+        /// <summary>
+        /// True if T IsValueType.
+        /// </summary>
+        private bool _isValueType;
+        /// <summary>
+        /// True if value was ever set after the SyncType initialized.
+        /// This is true even if SetInitialValues was called at runtime.
+        /// </summary>
+        private bool _valueSetAfterInitialized;
         #endregion
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SyncVar(NetworkBehaviour nb, uint syncIndex, WritePermission writePermission, ReadPermission readPermission, float sendRate, Channel channel, T value)
-        {
-            SetInitialValues(value);
-            base.InitializeInstance(nb, syncIndex, writePermission, readPermission, sendRate, channel, false);
-        }
+        #region Constructors.
+        public SyncVar(SyncTypeSettings settings = new SyncTypeSettings()) : this(default(T), settings) { }
+        public SyncVar(T initialValue, SyncTypeSettings settings = new SyncTypeSettings()) : base(settings) => SetInitialValues(initialValue);
+        #endregion
 
         /// <summary>
         /// Called when the SyncType has been registered, but not yet initialized over the network.
         /// </summary>
-        protected override void Registered()
+        protected override void Initialized()
         {
-            base.Registered();
+            base.Initialized();
+            _isValueType = typeof(T).IsValueType;
             _initialValue = _value;
         }
 
         /// <summary>
-        /// Sets initial values to next.
+        /// Sets initial values.
+        /// Initial values are not automatically synchronized, as it is assumed clients and server already have them set to the specified value.
+        /// When a SyncVar is reset, such as when the object despawns, current values are set to initial values.
         /// </summary>
-        /// <param name="next"></param>
-        private void SetInitialValues(T next)
+        public void SetInitialValues(T value)
         {
-            _initialValue = next;
-            UpdateValues(next);
+            _initialValue = value;
+            UpdateValues(value, true);
+
+            if (base.IsInitialized)
+                _valueSetAfterInitialized = true;
         }
         /// <summary>
         /// Sets current and previous values.
         /// </summary>
         /// <param name="next"></param>
-        private void UpdateValues(T next)
+        private void UpdateValues(T next, bool updateClient)
         {
-            _previousClientValue = next;
+            if (updateClient)
+                _previousClientValue = next;
             _value = next;
         }
         /// <summary>
@@ -102,19 +154,20 @@ namespace FishNet.Object.Synchronizing
         /// </summary>
         /// <param name="calledByUser">True if SetValue was called in response to user code. False if from automated code.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetValue(T nextValue, bool calledByUser)
+        internal void SetValue(T nextValue, bool calledByUser, bool sendRpc = false)
         {
-            /* If not registered then that means Awake
-             * has not completed on the owning class. This would be true
-             * when setting values within awake on the owning class. Registered
-             * is called at the end of awake, so it would be unset until awake completed.
-             * 
-             * Registered however will be true when setting from another script,
-             * even if the owning class of this was just spawned. This is because
-             * the unity cycle will fire awake on the object soon as it's spawned, 
-             * completing awake, and the user would set the value after. */
-            if (!base.IsRegistered)
+            /* IsInitialized is only set after the script containing this SyncVar
+             * has executed our codegen in the beginning of awake, and after awake
+             * user logic. When not set update the initial values */
+            if (!base.IsInitialized)
+            {
+                SetInitialValues(nextValue);
                 return;
+            }
+            else
+            {
+                _valueSetAfterInitialized = true;
+            }
 
             /* If not client or server then set skipChecks
              * as true. When neither is true it's likely user is changing
@@ -132,12 +185,11 @@ namespace FishNet.Object.Synchronizing
             {
                 if (!base.CanNetworkSetValues(true))
                     return;
-
                 /* We will only be this far if the network is not active yet,
                  * server is active, or client has setting permissions. 
                  * We only need to set asServerInvoke to false if the network
                  * is initialized and the server is not active. */
-                bool asServerInvoke = (!isNetworkInitialized || base.NetworkBehaviour.IsServer);
+                bool asServerInvoke = CanInvokeCallbackAsServer();
 
                 /* If the network has not been network initialized then
                  * Value is expected to be set on server and client since
@@ -145,7 +197,7 @@ namespace FishNet.Object.Synchronizing
                 if (!isNetworkInitialized)
                 {
                     T prev = _value;
-                    UpdateValues(nextValue);
+                    UpdateValues(nextValue, false);
                     //Still call invoke because change will be cached for when the network initializes.
                     InvokeOnChange(prev, _value, calledByUser);
                 }
@@ -171,13 +223,13 @@ namespace FishNet.Object.Synchronizing
                 T prev = _previousClientValue;
                 if (Comparers.EqualityCompare<T>(prev, nextValue))
                     return;
-
                 /* If also server do not update value.
                  * Server side has say of the current value. */
-                if (!base.NetworkManager.IsServer)
-                    UpdateValues(nextValue);
+                if (base.NetworkManager.IsServerStarted)
+                    _previousClientValue = nextValue; 
+                /* If server is not started then update both. */
                 else
-                    _previousClientValue = nextValue;
+                    UpdateValues(nextValue, true);
 
                 InvokeOnChange(prev, nextValue, calledByUser);
             }
@@ -196,7 +248,34 @@ namespace FishNet.Object.Synchronizing
 
                 if (asServer)
                     base.Dirty();
+                //base.Dirty(sendRpc);
             }
+        }
+
+        /// <summary>
+        /// True if callback can be invoked with asServer true.
+        /// </summary>
+        /// <returns></returns>
+        private bool AsServerInvoke() => (!base.IsNetworkInitialized || base.NetworkBehaviour.IsServerStarted);
+
+        /// <summary>
+        /// Dirties the the syncVar for a full send.
+        /// </summary>
+        public void DirtyAll()
+        {
+            if (!base.IsInitialized)
+                return;
+            if (!base.CanNetworkSetValues(true))
+                return;
+
+            base.Dirty();
+            /* Invoke even if was unable to dirty. Dirtying only
+             * becomes true if server is running, but also if there are
+             * observers. Even if there are not observers we still want
+             * to invoke for the server side. */
+            //todo: this behaviour needs to be done for all synctypes with dirt/dirtyall.
+            bool asServerInvoke = CanInvokeCallbackAsServer();
+            InvokeOnChange(_value, _value, asServerInvoke);
         }
 
         /// <summary>
@@ -220,13 +299,13 @@ namespace FishNet.Object.Synchronizing
             }
         }
 
-
         /// <summary>
         /// Called after OnStartXXXX has occurred.
         /// </summary>
         /// <param name="asServer">True if OnStartServer was called, false if OnStartClient.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void OnStartCallback(bool asServer)
+        [MakePublic]
+        internal protected override void OnStartCallback(bool asServer)
         {
             base.OnStartCallback(asServer);
 
@@ -247,7 +326,8 @@ namespace FishNet.Object.Synchronizing
         /// Writes current value.
         /// </summary>
         /// <param name="resetSyncTick">True to set the next time data may sync.</param>
-        public override void WriteDelta(PooledWriter writer, bool resetSyncTick = true)
+        [MakePublic]
+        internal protected override void WriteDelta(PooledWriter writer, bool resetSyncTick = true)
         {
             base.WriteDelta(writer, resetSyncTick);
             writer.Write<T>(_value);
@@ -256,31 +336,52 @@ namespace FishNet.Object.Synchronizing
         /// <summary>
         /// Writes current value if not initialized value.
         /// </summary>m>
-        public override void WriteFull(PooledWriter obj0)
+        [MakePublic]
+        internal protected override void WriteFull(PooledWriter obj0)
         {
-            if (Comparers.EqualityCompare<T>(_initialValue, _value))
-                return;
+            /* If a class then skip comparer check.
+             * InitialValue and Value will be the same reference.
+             * 
+             * If a struct then compare field changes, since the references
+             * will not be the same. Otherwise comparer normally. */
+            //Compare if a value type.
+            if (_isValueType)
+            {
+                if (Comparers.EqualityCompare<T>(_initialValue, _value))
+                    return;
+            }
+            else
+            {
+                if (!_valueSetAfterInitialized)
+                    return;
+            }
             /* SyncVars only hold latest value, so just
              * write current delta. */
             WriteDelta(obj0, false);
         }
 
-        //Read isn't used by SyncVar<T>, it's done within the NB.
-        //public override void Read(PooledReader reader) { }
-
         /// <summary>
-        /// Gets current value.
+        /// Reads a SyncVar value.
         /// </summary>
-        /// <param name="calledByUser"></param>
-        /// <returns></returns>
-        public T GetValue(bool calledByUser) => (calledByUser) ? _value : _previousClientValue;
+        protected internal override void Read(PooledReader reader, bool asServer)
+        {
+            T value = reader.Read<T>();
+            SetValue(value, false);
+        }
 
         /// <summary>
         /// Resets to initialized values.
         /// </summary>
-        public override void ResetState()
+        [MakePublic]
+        internal protected override void ResetState(bool asServer)
         {
-            base.ResetState();
+            base.ResetState(asServer);
+
+            //todo: validate this improvement after new tests are made.
+            ////Let clientHost reset if the object containing this syncvar is initialized for them.
+            //if (asServer && base.IsNetworkInitialized && NetworkBehaviour.IsClientInitialized)
+            //    return;
+
             _value = _initialValue;
             _previousClientValue = _initialValue;
         }

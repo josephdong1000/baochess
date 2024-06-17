@@ -1,9 +1,7 @@
-﻿#if UNITY_2020_3_OR_NEWER && UNITY_EDITOR_WIN
-using FishNet.CodeAnalysis.Annotations;
-#endif
-using FishNet.Connection;
+﻿using FishNet.Connection;
 using FishNet.Documenting;
 using FishNet.Object.Synchronizing.Internal;
+using FishNet.Serializing;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -36,14 +34,24 @@ namespace FishNet.Object
         private bool _onStopNetworkCalled;
         #endregion
 
+        /* Payloads are written and read immediatley after the header containing the target NetworkObject/Behaviour. */
+        /// <summary>
+        /// Called when writing a spawn. This may be used to deliver information for predicted spawning, or simply have values set before initialization without depending on SyncTypes.
+        /// </summary>
+        /// <param name="connection">Connection receiving the payload. When sending to the server connection.IsValid will return false.</param>
+        public virtual void WritePayload(NetworkConnection connection, Writer writer) { }
+        /// <summary>
+        /// Called before network start callbacks, but after the object is initialized with network values. This may be used to read information from predicted spawning, or simply have values set before initialization without depending on SyncTypes.
+        /// </summary>
+        /// <param name="connection">Connection sending the payload. When coming from the server connection.IsValid will return false.</param>
+        public virtual void ReadPayload(NetworkConnection connection, Reader reader) { }
+
         /// <summary>
         /// Invokes OnStartXXXX for synctypes, letting them know the NetworkBehaviour start cycle has been completed.
         /// </summary>
         internal void InvokeSyncTypeOnStartCallbacks(bool asServer)
         {
-            foreach (SyncBase item in _syncVars.Values)
-                item.OnStartCallback(asServer);
-            foreach (SyncBase item in _syncObjects.Values)
+            foreach (SyncBase item in _syncTypes.Values)
                 item.OnStartCallback(asServer);
         }
 
@@ -52,9 +60,7 @@ namespace FishNet.Object
         /// </summary>
         internal void InvokeSyncTypeOnStopCallbacks(bool asServer)
         {
-            foreach (SyncBase item in _syncVars.Values)
-                item.OnStopCallback(asServer);
-            foreach (SyncBase item in _syncObjects.Values)
+            foreach (SyncBase item in _syncTypes.Values)
                 item.OnStopCallback(asServer);
         }
 
@@ -80,7 +86,7 @@ namespace FishNet.Object
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void OnStartNetwork_Internal()
+        internal virtual void OnStartNetwork_Internal()
         {
             _onStartNetworkCalled = true;
             _onStopNetworkCalled = false;
@@ -95,7 +101,7 @@ namespace FishNet.Object
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void OnStopNetwork_Internal()
+        internal virtual void OnStopNetwork_Internal()
         {
             _onStopNetworkCalled = true;
             _onStartNetworkCalled = false;
@@ -138,21 +144,17 @@ namespace FishNet.Object
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnOwnershipServer_Internal(NetworkConnection prevOwner)
         {
-            //When switching ownership always clear replicate cache on server.
-#if !PREDICTION_V2
-            ClearReplicateCache_Virtual(true);
-#else
-            ClearReplicateCache();
+#if !PREDICTION_1
+            ResetPredictionTicks();
 #endif
+            CallClearReplicateCache(true);
             OnOwnershipServer(prevOwner);
         }
         /// <summary>
         /// Called on the server after ownership has changed.
         /// </summary>
         /// <param name="prevOwner">Previous owner of this object.</param>
-
         public virtual void OnOwnershipServer(NetworkConnection prevOwner) { }
-
 
         /// <summary>
         /// Called on the server after a spawn message for this object has been sent to clients.
@@ -190,27 +192,46 @@ namespace FishNet.Object
         /// </summary>
         public virtual void OnStopClient() { }
 
+#if !PREDICTION_1
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnOwnershipClient_Internal(NetworkConnection prevOwner)
         {
             //If losing or gaining ownership then clear replicate cache.
             if (IsOwner || prevOwner == LocalConnection)
-            {
-#if !PREDICTION_V2
-                ClearReplicateCache_Virtual(false);
-#else
-                ClearReplicateCache();
-#endif
-            }
+                CallClearReplicateCache(false);
+
+            _lastReadReconcileTick = 0;
             OnOwnershipClient(prevOwner);
         }
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void OnOwnershipClient_Internal(NetworkConnection prevOwner)
+        {
+            //If losing or gaining ownership then clear replicate cache.
+            if (IsOwner || prevOwner == LocalConnection)
+                CallClearReplicateCache(false);
+
+            OnOwnershipClient(prevOwner);
+        }
+#endif
         /// <summary>
         /// Called on the client after gaining or losing ownership.
         /// </summary>
         /// <param name="prevOwner">Previous owner of this object.</param>
         public virtual void OnOwnershipClient(NetworkConnection prevOwner) { }
 
+        /// <summary>
+        /// Calls ClearReplicateCache for prediction v1 or v2.
+        /// </summary>
+        private void CallClearReplicateCache(bool asServer)
+        {
+#if PREDICTION_1
+            ClearReplicateCache_Virtual(asServer);
+#else
+            ClearReplicateCache();
+#endif
+        }
     }
 
 

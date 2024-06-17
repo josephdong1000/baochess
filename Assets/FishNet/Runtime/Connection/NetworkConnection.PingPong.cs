@@ -33,6 +33,7 @@ namespace FishNet.Connection
         /// </summary>
         private const byte EXCESSIVE_PING_LIMIT = 10;
         #endregion
+
 #pragma warning restore CS0414
         /// <summary>
         /// Initializes for ping.
@@ -63,18 +64,15 @@ namespace FishNet.Connection
         {
             /* Only check ping conditions in build. Editors are prone to pausing which can
              * improperly kick clients. */
-#if UNITY_EDITOR
-            return true;
-#else
             TimeManager tm = (NetworkManager == null) ? InstanceFinder.TimeManager : NetworkManager.TimeManager;
             /* Server FPS is running low, timing isn't reliable enough to kick clients.
              * Respond with clients ping and remove infractions just in case the
              * client received some from other server instabilities. */
-            //if (tm.LowFrameRate)
-            //{
-            //    _excessivePingCount = 0f;
-            //    return false;
-            //}
+            if (tm.LowFrameRate)
+            {
+                //_excessivePingCount = 0f;
+                return false;
+            }
 
             uint currentTick = tm.Tick;
             uint difference = (currentTick - _lastPingTick);
@@ -100,7 +98,6 @@ namespace FishNet.Connection
                 //_excessivePingCount = UnityEngine.Mathf.Max(0f, _excessivePingCount - 0.5f);
                 return true;
             }
-#endif
         }
     }
 

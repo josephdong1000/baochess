@@ -46,7 +46,7 @@ namespace FishNet.CodeGenerating.Helping.Extension
                         continue;
                     if (fd.IsNotSerialized)
                         continue;
-                    if (gh.CodegenExclude(fd))
+                    if (gh.HasExcludeSerializationAttribute(fd))
                         continue;
                     if (fd.IsPrivate)
                         continue;
@@ -78,7 +78,7 @@ namespace FishNet.CodeGenerating.Helping.Extension
                     //Missing get or set method.
                     if (pd.GetMethod == null || pd.SetMethod == null)
                         continue;
-                    if (gh.CodegenExclude(pd))
+                    if (gh.HasExcludeSerializationAttribute(pd))
                         continue;
                     if (pd.GetMethod.IsPrivate)
                         continue;
@@ -400,6 +400,8 @@ namespace FishNet.CodeGenerating.Helping.Extension
         /// <returns></returns>
         public static bool ImplementsInterface<TInterface>(this TypeDefinition typeDef)
         {
+            if (typeDef.Interfaces == null)
+                return false;
             for (int i = 0; i < typeDef.Interfaces.Count; i++)
             {
                 if (typeDef.Interfaces[i].InterfaceType.Is<TInterface>())

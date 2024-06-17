@@ -127,6 +127,7 @@ namespace FishNet.Object.Synchronizing
     /// Synchronizes collections or objects from the server to clients. Can be used with custom SyncObjects.
     /// Value must be changed on server.
     /// </summary>
+    [Obsolete("This no longer functions. See console errors and Break Solutions in the documentation for resolution.")]
     [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public class SyncObjectAttribute : PropertyAttribute
     {
@@ -144,7 +145,7 @@ namespace FishNet.Object.Synchronizing
         public WritePermission WritePermissions = WritePermission.ServerOnly;
         /// <summary>
         /// True if to require the readonly attribute.
-        /// Setting to false will allow inspector serialization of this object, but you must never manually initialize this object.
+        /// Setting to false will allow inspector serialization of this object. When false you must still initialize this object on it's field declaration, but never anywhere else.
         /// </summary>
         public bool RequireReadOnly = true;
     }
@@ -153,6 +154,7 @@ namespace FishNet.Object.Synchronizing
     /// Synchronizes a variable from server to clients automatically.
     /// Value must be changed on server.
     /// </summary>
+    [Obsolete("This no longer functions. See console errors and Break Solutions in the documentation for resolution.")]
     [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public class SyncVarAttribute : PropertyAttribute
     {
