@@ -237,7 +237,7 @@ public class MultipleChecker : MonoBehaviour {
 
 
     /// <summary>
-    /// Same as BattlefieldCommand, except for self-pieces --> enables Sword in the Stone
+    /// Same as BattlefieldCommand, except for self-pieces --> enables Pyrrhic Maneuver
     /// </summary>
     /// <param name="anyPosition"></param>
     /// <param name="kingPosition"></param>

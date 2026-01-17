@@ -11,6 +11,10 @@ public class EditorButtonScript : MonoBehaviour {
     [HideInInspector] public Color highlightColor;
     [HideInInspector] public Color unhighlightColor;
 
+    /// <summary>
+    /// Hardcoded sprite list for piece themes.
+    /// Would be nice to just take directly from the Piece scripts themselves
+    /// </summary>
     public List<Sprite> classicSpriteList;
     [FormerlySerializedAs("spriteList")] public List<Sprite> babaSpriteList;
     
@@ -21,7 +25,6 @@ public class EditorButtonScript : MonoBehaviour {
     private SpriteRenderer _backgroundSpriteRenderer;
     private SpriteRenderer _pieceSpriteRenderer;
     private List<Sprite> _spriteList;
-    private ThemeColorsManager _themeColorsManager;
     private ThemeManager.Theme _myTheme;
     private Color _whiteColor;
     private Color _blackColor;
@@ -29,7 +32,6 @@ public class EditorButtonScript : MonoBehaviour {
 
     private void Awake() {
         SelectedPieceType = (PieceScript.PieceType.Empty, PieceScript.Side.None);
-        _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
         
         _pieceSpriteRenderer = transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
         _backgroundSpriteRenderer = transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>();
@@ -47,7 +49,7 @@ public class EditorButtonScript : MonoBehaviour {
             .Append((PieceScript.PieceType.Empty, PieceScript.Side.None))
             .ToList();
         
-        UpdateThemeSpritesColors();
+        // UpdateThemeSpritesColors();
     }
 
     private void OnMouseDown() {
@@ -86,40 +88,17 @@ public class EditorButtonScript : MonoBehaviour {
             (_whiteColor, _blackColor) = ThemeManager.Instance.GetThemePieceColor();
             
             if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic) {
-                highlightColor = _themeColorsManager.classicLightSquareColor;
-                unhighlightColor = _themeColorsManager.classicDarkSquareColor;
+                highlightColor = ThemeColorsManager.Instance.classicLightSquareColor;
+                unhighlightColor = ThemeColorsManager.Instance.classicDarkSquareColor;
                 _spriteList = classicSpriteList;
             } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba) {
                 
-                highlightColor = _themeColorsManager.babaLightSquareColor;
-                unhighlightColor = _themeColorsManager.babaDarkSquareColor;
+                highlightColor = ThemeColorsManager.Instance.babaLightSquareColor;
+                unhighlightColor = ThemeColorsManager.Instance.babaDarkSquareColor;
                 _spriteList = babaSpriteList;
             } else {
                 throw new Exception("Invalid theme selected");
             }
         }
-        
-        // if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
-        //     _myTheme != ThemeManager.Theme.Classic) {
-        //
-        //     highlightColor = _themeColorsManager.classicLightSquareColor;
-        //     unhighlightColor = _themeColorsManager.classicDarkSquareColor;
-        //     _spriteList = classicSpriteList;
-        //     // _whiteColor = _themeColorsManager.classicWhiteColor;
-        //     // _blackColor = _themeColorsManager.classicBlackColor;
-        //     
-        //     _myTheme = ThemeManager.Theme.Classic;
-        // } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
-        //            _myTheme != ThemeManager.Theme.Baba) {
-        //     
-        //     highlightColor = _themeColorsManager.babaLightSquareColor;
-        //     unhighlightColor = _themeColorsManager.babaDarkSquareColor;
-        //     _spriteList = babaSpriteList;
-        //     // _whiteColor = _themeColorsManager.babaWhiteColor;
-        //     // _blackColor = _themeColorsManager.babaBlackColor;
-        //
-        //     _myTheme = ThemeManager.Theme.Baba;
-        // }
-        
     }
 }

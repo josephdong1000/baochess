@@ -241,13 +241,13 @@ public class BoardScript : MonoBehaviour {
             UpdatePieceCountReferences();
 
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.startMultiplayerGame.Value) {
+                MoveRelayerScript.Instance.CanStartMultiplayerGame()) {
                 // Receiving side correctly!
-                Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.ThisSide}");
+                Debug.Log($"Multiplayer side is {MoveRelayerScript.Instance.GetMyPlayingSide()}");
 
                 // yield return new WaitUntil(() => MoveRelayerScript.Instance.thisSide != PieceScript.Side.None);
 
-                if (MoveRelayerScript.Instance.ThisSide != PlayingSide) {
+                if (MoveRelayerScript.Instance.GetMyPlayingSide() != PlayingSide) {
                     yield return new WaitUntil(() => receivedEnemyBoardState != null);
                     Debug.Log("Received enemy board state");
                     BoardStateScript.BoardStates.Add(receivedEnemyBoardState);
@@ -311,9 +311,12 @@ public class BoardScript : MonoBehaviour {
             DeactivateBannedMovesSafely(moveName: SelectedMoveName);
             CheckExtraMove();
 
+            // Generate SFX
+            PlaySoundEffects();
+
             // Move pieces
             yield return MovePieces();
-            UpdateAutomaticMoves();
+            UpdateAutomaticMoves(); // Footmen self-moving
 
             // Update visuals and piece data
             UpdatePiecePositions();
@@ -323,7 +326,7 @@ public class BoardScript : MonoBehaviour {
 
             // BoardStateScript.StoreBoardState(_board, PlayingSide, BanningMoveFlags);
             if (MoveRelayerScript.Instance != null &&
-                MoveRelayerScript.Instance.startMultiplayerGame.Value) {
+                MoveRelayerScript.Instance.CanStartMultiplayerGame()) {
                 MoveRelayerScript.Instance.SendBoardState(BoardStateScript.BoardStates.Last(),
                                                           MoveRelayerScript.Instance.Owner.ClientId);
             }
@@ -339,7 +342,7 @@ public class BoardScript : MonoBehaviour {
                 ResetBanningMoveFlags();
                 SwitchPlayers();
                 if (MoveRelayerScript.Instance != null &&
-                    MoveRelayerScript.Instance.startMultiplayerGame.Value) {
+                    MoveRelayerScript.Instance.CanStartMultiplayerGame()) {
                     MoveRelayerScript.Instance.NetworkFlipPlayingSide();
                 }
             }
@@ -730,7 +733,7 @@ public class BoardScript : MonoBehaviour {
 
     IEnumerator AwaitStartMultiplayer() {
         yield return new WaitUntil(() => MoveRelayerScript.Instance != null &&
-                                         MoveRelayerScript.Instance.startMultiplayerGame.Value);
+                                         MoveRelayerScript.Instance.CanStartMultiplayerGame());
         SelectingMove = false;
         yield return ResetGameLoop();
     }
@@ -1862,6 +1865,54 @@ public class BoardScript : MonoBehaviour {
         RangedPositions.Clear();
     }
 
+    private void PlaySoundEffects() {
+        if (selectedSingleMove != default(((int, int), (int, int), (int, int), string))) {
+            var (_, _, _, moveName) = selectedSingleMove;
+
+            // Play sound for promotion. Will return to avoid overlapping capture SFX
+            if (moveName == "PromotePassive" || moveName == "PromoteAttack") {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Promote);
+                return;
+            }
+
+            // Play other sound effects
+            if (MoveNames["MoveFunctions"].Contains(moveName)) {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Move);
+            } else if (MoveNames["CaptureFunctions"].Contains(moveName)) {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else if (MoveNames["SelfCaptureFunctions"].Contains(moveName)) {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else if (MoveNames["RangedFunctions"].Contains(moveName)) { // i.e. Serfs Up
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else if (MoveNames["AttackReplaceFunctions"].Contains(moveName)) {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else if (MoveNames["PassiveReplaceFunctions"].Contains(moveName)) {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else {
+                Debug.LogError($"No sound effect for move {moveName}", this);
+            }
+        } else {
+            var ((piecePositionA, piecePositionB), (finalPositionA, finalPositionB), moveName) = selectedMultipleMove;
+            if (moveName == "TrojanHorse" || moveName == "BattlefieldCommand") {
+                // Check if capturing. If the sounds become different, you may want to separate
+                if ((piecePositionA != finalPositionA && !IsEmptySquare(finalPositionA)) ||
+                    (piecePositionB != finalPositionB && !IsEmptySquare(finalPositionB))) {
+                    SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+                } else {
+                    SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Move);
+                }
+            } else if (moveName == "Castle") {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Castle);
+            } else if (moveName == "BattlefieldCommandSelf") {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else if (moveName == "BattlefieldCommandSelfNull") {
+                SoundManagerScript.PlaySound(SoundManagerScript.SoundEffect.Capture);
+            } else {
+                Debug.Log($"Unsupported multiple move for sfx: {moveName}", this);
+            }
+        }
+    }
+
     IEnumerator MovePieces() {
         if (selectedSingleMove != default(((int, int), (int, int), (int, int), string))) {
             var (piecePosition, finalPosition, targetPosition, moveName) = selectedSingleMove;
@@ -1881,13 +1932,12 @@ public class BoardScript : MonoBehaviour {
                 // Debug.Log(replaceOutput.Item1);
                 // Debug.Log(string.Join(",", replaceOutput.Item2));
 
-                PieceScript.PieceType selectedPieceType;
-
                 DeleteList.Add(GetPosition(piecePosition));
                 _board[piecePosition.Item1, piecePosition.Item2] =
                     InstantiatePiece(PieceScript.PieceType.Empty, piecePosition);
 
                 foreach (var (newPosition, newPieceTypes) in replaceOutput.Item2) {
+                    PieceScript.PieceType selectedPieceType;
                     if (newPieceTypes.Count == 1) {
                         selectedPieceType = newPieceTypes[0];
                     } else {

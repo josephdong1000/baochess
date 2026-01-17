@@ -33,6 +33,11 @@ public class MoveList : MonoBehaviour {
         }
     }
     
+    /// <summary>
+    /// Inverts the moves selected. Useful for pulling all moves except for one
+    /// </summary>
+    /// <param name="moveList"></param>
+    /// <returns></returns>
     public static List<string> InvertMoveSelection(List<string> moveList) {
         // Flatten all move names
         List<string> output = new();

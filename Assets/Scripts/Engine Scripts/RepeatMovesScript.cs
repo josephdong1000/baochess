@@ -12,6 +12,7 @@ public class RepeatMovesScript : MonoBehaviour {
     /// <para>Banned dictionary says how long the banned move & if enemy (string, bool) is banned for (value, # turns)</para>
     /// </summary>
     public static Dictionary<string, Dictionary<(string, bool), bool>> BanningMovesDict;
+
     public static int BanningMovesDictLength = 5;
 
     /// <summary>
@@ -21,31 +22,30 @@ public class RepeatMovesScript : MonoBehaviour {
 
     private static BoardScript _boardScript;
     private static List<string> _allMoveNames;
-    private static Dictionary<(string, bool), bool> _swordInTheStoneDictSelfEnemy;
-    private static Dictionary<(string, bool), bool> _swordInTheStoneDictEnemy;
+    private static Dictionary<(string, bool), bool> _pyrrhicManeuverDictSelfEnemy; // Banned moves for yourself
+    private static Dictionary<(string, bool), bool> _pyrrhicManeuverDictEnemy; // Banned moves for opponent
 
     // Start is called before the first frame update
     private void Awake() {
         // _boardScript = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardScript>();
 
         ExtraMovesDict = new() {
-            { "CoregencyReplace", 1 },
+            // 06/19/2024 PATCH: CoregencyReplace (0th turn) consumes a turn (it was too broken)
+            // { "CoregencyReplace", 1 },
             { "CoregencyRevert", 1 },
-            { "SwordInTheStone", 1 },
+            { "PyrrhicManeuver", 1 },
             { "BattlefieldCommandSelf", 1 },
         };
     }
 
     private void Start() {
-        _swordInTheStoneDictEnemy = MoveList.AllSpecialMoveNames
+        _pyrrhicManeuverDictEnemy = MoveList.AllSpecialMoveNames
             .ToDictionary(s => (s, true), _ => true)
             .ToDictionary(e => e.Key, e => e.Value);
 
-
-        _swordInTheStoneDictSelfEnemy = MoveList.InvertMoveSelection(MoveList.GetAllMoves(typeof(KingScript)))
-            .Append("SwordInTheStone")
-            .Append("SwordInTheStoneNull")
-            // .Append("BattlefieldCommandSelf") // Already included
+        // 06/19/2024 PATCH: PyrrhicManeuver enables you to move any piece one more time 
+        // _pyrrhicManeuverDictSelfEnemy = MoveList.InvertMoveSelection(MoveList.GetAllMoves(typeof(KingScript)))...
+        _pyrrhicManeuverDictSelfEnemy = new List<string> { "PyrrhicManeuver", "PyrrhicManeuverNull" }
             .ToDictionary(s => (s, false), _ => true)
             .Concat(MoveList.AllSpecialMoveNames.ToDictionary(s => (s, true), _ => true))
             .ToDictionary(e => e.Key, e => e.Value);
@@ -56,13 +56,13 @@ public class RepeatMovesScript : MonoBehaviour {
                 "CoregencyRevert", MoveList.GetAllMoves(typeof(QueenScript))
                     .ToDictionary(s => (s, false), _ => true)
             }, {
-                "SwordInTheStone", _swordInTheStoneDictSelfEnemy
+                "PyrrhicManeuver", _pyrrhicManeuverDictSelfEnemy
             }, {
-                "BattlefieldCommandSelf", _swordInTheStoneDictSelfEnemy
+                "BattlefieldCommandSelf", _pyrrhicManeuverDictSelfEnemy
             }, {
-                "SwordInTheStoneNull", _swordInTheStoneDictEnemy
+                "PyrrhicManeuverNull", _pyrrhicManeuverDictEnemy
             }, {
-                "BattlefieldCommandSelfNull", _swordInTheStoneDictEnemy
+                "BattlefieldCommandSelfNull", _pyrrhicManeuverDictEnemy
             }
         };
     }

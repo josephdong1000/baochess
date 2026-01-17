@@ -6,24 +6,14 @@ using System.Linq;
 using UnityEngine;
 
 public class SelectScript : MonoBehaviour {
-    // public Color highlightedColor;
-    // public Color selectedFriendlyColor;
-    // public Color selectedEnemyColor;
-
+    
     public float colorFadeSpeed;
     public float colorFadeDeltaTime;
 
     public Sprite blankSprite;
     public Sprite classicHighlightDotSprite;
     public Sprite babaHighlightDotSprite;
-
-    // Deprecated
-    // public Sprite whiteSprite;
-    // public Sprite blackSprite;
-    // public Sprite whiteHighlightSprite;
-    // public Sprite blackHighlightSprite;
-
-
+    
     [HideInInspector] public (int, int) Position;
     private bool _hovered;
     private bool _update;
@@ -35,9 +25,9 @@ public class SelectScript : MonoBehaviour {
     private float _proportionHovered;
 
     private BoardScript _boardScript;
-    private ThemeColorsManager _themeColorsManager;
+    // private ThemeColorsManager _themeColorsManager;
     private ThemeManager.Theme _myTheme;
-    
+
 
     private void Awake() {
         _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -51,17 +41,18 @@ public class SelectScript : MonoBehaviour {
         _hovered = false;
         _update = true;
         _proportionHovered = 0;
-        _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
-        _myTheme = ThemeManager.Theme.None;
+        // _themeColorsManager = GameObject.FindGameObjectWithTag("Theme Manager").GetComponent<ThemeColorsManager>();
+        // _myTheme = ThemeManager.Theme.None;
+
+        // Efficiently change themes
+        ThemeManager.OnThemeChange += UpdateThemeSpritesColors;
     }
 
     private void Start() {
         UpdateThemeSpritesColors();
     }
 
-    // Update is called once per frame
     void Update() {
-        UpdateThemeSpritesColors();
         if (_update) {
             // FetchSides();
             StartCoroutine(UpdateHoveringColor());
@@ -81,9 +72,14 @@ public class SelectScript : MonoBehaviour {
         _hovered = false;
     }
 
+    private void OnMouseDown() {
+        if (BoardScript.SelectingMove) {
+            _boardScript.SelectedPositions.Add(Position);
+        }
+    }
+
     IEnumerator UpdateHoveringColor() {
         while (true) {
-
             if (_hovered) {
                 _proportionHovered = Math.Min(_proportionHovered + colorFadeDeltaTime * colorFadeSpeed, 1);
             } else {
@@ -102,27 +98,24 @@ public class SelectScript : MonoBehaviour {
 
     private void UpdateThemeSpritesColors() {
         // Changes the board square's default colors and highlight dot sprites based on the current theme
-        
-        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
-            _myTheme != ThemeManager.Theme.Classic) {
-            
+        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic) {
             _defaultColor = _boardScript.IsSameParity((0, 1), Position)
-                ? _themeColorsManager.classicLightSquareColor
-                : _themeColorsManager.classicDarkSquareColor;
-            _hoveredColor = _themeColorsManager.classicHoveredColor;
-            _childSpriteRenderer.sprite = classicHighlightDotSprite;
-            
-            _myTheme = ThemeManager.Theme.Classic;
-        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
-                   _myTheme != ThemeManager.Theme.Baba) {
-            
+                ? ThemeColorsManager.Instance.classicLightSquareColor
+                : ThemeColorsManager.Instance.classicDarkSquareColor;
+            _hoveredColor = ThemeColorsManager.Instance.classicHoveredColor;
+            if (_childSpriteRenderer != null) {
+                _childSpriteRenderer.sprite = classicHighlightDotSprite;
+            } 
+        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba) {
             _defaultColor = _boardScript.IsSameParity((0, 1), Position)
-                ? _themeColorsManager.babaLightSquareColor
-                : _themeColorsManager.babaDarkSquareColor;
-            _hoveredColor = _themeColorsManager.babaHoveredColor;
-            _childSpriteRenderer.sprite = babaHighlightDotSprite;
-            
-            _myTheme = ThemeManager.Theme.Baba;
+                ? ThemeColorsManager.Instance.babaLightSquareColor
+                : ThemeColorsManager.Instance.babaDarkSquareColor;
+            _hoveredColor = ThemeColorsManager.Instance.babaHoveredColor;
+            if (_childSpriteRenderer != null){
+                _childSpriteRenderer.sprite = babaHighlightDotSprite;
+            }
+        } else {
+            Debug.LogError($"Not a valid Theme: {ThemeManager.CurrentTheme}", this);
         }
     }
 
@@ -130,7 +123,6 @@ public class SelectScript : MonoBehaviour {
     /// If applicable, show the highlight dot
     /// </summary>
     private void UpdateHighlightDot() {
-        
         if (_boardScript.HighlightedPositions.Contains(Position) &&
             !_boardScript.SelectedPositions.Contains(Position) &&
             !_boardScript.AttackPositions.Contains(Position)) {
@@ -138,13 +130,6 @@ public class SelectScript : MonoBehaviour {
             _childSpriteRenderer.enabled = true;
         } else {
             _childSpriteRenderer.enabled = false;
-        }
-    }
-
-
-    private void OnMouseDown() {
-        if (BoardScript.SelectingMove) {
-            _boardScript.SelectedPositions.Add(Position);
         }
     }
 }

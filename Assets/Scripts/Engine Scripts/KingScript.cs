@@ -12,8 +12,8 @@ public class KingScript : PieceScript {
             KingMove
         };
         SelfCaptureFunctions = new() {
-            SwordInTheStone,
-            SwordInTheStoneNull
+            PyrrhicManeuver,
+            PyrrhicManeuverNull
         };
         ProtectFunctions = new() {
         };
@@ -55,22 +55,27 @@ public class KingScript : PieceScript {
                BoardScript.IsEnemy(Position, move, PieceSide);
     }
 
+    /// <summary>
+    /// Formerly SwordInTheStone
+    /// </summary>
+    /// <param name="move"></param>
+    /// <returns></returns>
     [Move]
     [SpecialMove]
-    public bool SwordInTheStone((int, int) move) {
+    public bool PyrrhicManeuver((int, int) move) {
         if (!MoveDict["move"].Contains(move)) {
             return false;
         }
 
-        // Can capture any friendly piece except for friendly king with Sword in the Stone
+        // Can capture any friendly piece except for friendly king with Pyrrhic Maneuver
         return !BoardScript.IsEnemy(Position, move, PieceSide) &&
                BoardScript.GetPieceType(Position, move) != PieceType.King;
     }
 
     [Move]
     [SpecialMove]
-    public bool SwordInTheStoneNull((int, int) move) {
-        return SwordInTheStone(move);
+    public bool PyrrhicManeuverNull((int, int) move) {
+        return PyrrhicManeuver(move);
     }
 
     [Move]

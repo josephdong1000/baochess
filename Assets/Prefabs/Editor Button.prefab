@@ -141,7 +141,7 @@ MonoBehaviour:
   - {fileID: 3286163911610860551, guid: db37f399d3aeb405097595482bb830e6, type: 3}
   - {fileID: 3286163911610860551, guid: a1c1310b5545144d1836dddde53372d3, type: 3}
   - {fileID: 3286163911610860551, guid: 3deedf0dff0ba4987ae2a716f5ef4cb3, type: 3}
-  - {fileID: 3286163911610860551, guid: 94e12a716e79f4f4888f79cd08e8de5e, type: 3}
+  - {fileID: 3286163911610860551, guid: b3f4877217bd24cb9a22912440da279c, type: 3}
   - {fileID: 21300000, guid: ebd784e04121843b1b2dabce7b2e9cf4, type: 3}
   - {fileID: 3286163911610860551, guid: ea443014f7f744676ae4bae230df78fd, type: 3}
   - {fileID: 3286163911610860551, guid: 8551870e17c214b15a0d2bc131e15341, type: 3}
@@ -149,7 +149,7 @@ MonoBehaviour:
   - {fileID: 3286163911610860551, guid: 66bbf00a23a73430dbc12c3cda6dd9bb, type: 3}
   - {fileID: 3286163911610860551, guid: dd7384e5fd81c48ef983e07f4b79853d, type: 3}
   - {fileID: 3286163911610860551, guid: 49cc8af6e514a4779b4c6e08744152d4, type: 3}
-  - {fileID: 3286163911610860551, guid: c06c8b4a2037e472196335938becc7fa, type: 3}
+  - {fileID: 3286163911610860551, guid: 86cd68f78a5c04256af243ca03eb33c3, type: 3}
   - {fileID: 21300000, guid: ebd784e04121843b1b2dabce7b2e9cf4, type: 3}
   babaSpriteList:
   - {fileID: 21300000, guid: f847da2aed68c4823be4acaf1daae152, type: 3}

@@ -14,8 +14,7 @@ public class PieceThemeHandler : MonoBehaviour {
 
     [HideInInspector] public Color babaWhiteColor;
     [HideInInspector] public Color babaBlackColor;
-
-
+    
     [HideInInspector] public Sprite whiteSprite;
     [HideInInspector] public Sprite blackSprite;
     [HideInInspector] public Color whiteColor;
@@ -23,37 +22,33 @@ public class PieceThemeHandler : MonoBehaviour {
 
 
     // private ThemeColorsManager _themeColorsManager;
-    private ThemeManager.Theme _myTheme;
 
 
     private void Awake() {
-        
         (classicWhiteColor, classicBlackColor) = ThemeManager.Instance.GetThemePieceColor(ThemeManager.Theme.Classic); 
         (babaWhiteColor, babaBlackColor) = ThemeManager.Instance.GetThemePieceColor(ThemeManager.Theme.Baba); 
-
-        _myTheme = ThemeManager.Theme.None;
-        UpdateSpriteAndColor();
+        
+        // Using a publisher-subscriber model to efficiently change theme colors
+        ThemeManager.OnThemeChange += UpdateSpriteAndColor;
     }
 
-    private void Update() {
+    private void Start() {
         UpdateSpriteAndColor();
     }
-
+    
     private void UpdateSpriteAndColor() {
-        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic &&
-            _myTheme != ThemeManager.Theme.Classic) {
+        if (ThemeManager.CurrentTheme == ThemeManager.Theme.Classic) {
             whiteSprite = classicWhiteSprite;
             blackSprite = classicBlackSprite;
             whiteColor = classicWhiteColor;
             blackColor = classicBlackColor;
-            _myTheme = ThemeManager.Theme.Classic;
-        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba &&
-                   _myTheme != ThemeManager.Theme.Baba) {
+        } else if (ThemeManager.CurrentTheme == ThemeManager.Theme.Baba) {
             whiteSprite = babaWhiteSprite;
             blackSprite = babaBlackSprite;
             whiteColor = babaWhiteColor;
             blackColor = babaBlackColor;
-            _myTheme = ThemeManager.Theme.Baba;
+        } else {
+            Debug.LogError($"Not a valid Theme: {ThemeManager.CurrentTheme}", this);
         }
     }
 }

@@ -85,7 +85,7 @@ public class PieceScript : MonoBehaviour {
 
 
     /// <summary>
-    /// <para>List of functions that that in a move and return if this piece can capture elsewhere by doing that move. Will only check for moving onto blank square</para>
+    /// <para>List of functions that take in a move and return if this piece can capture elsewhere by doing that move. Will only check for moving onto blank square</para>
     /// <para>If yes, return true and a list of possible capturable target positions</para>
     /// </summary>
     public List<Func<(int, int), (bool, List<(int, int)>)>>

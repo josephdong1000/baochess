@@ -28,7 +28,7 @@ public sealed class PlayersJoinedScript : MonoBehaviour {
 
     public void UpdatePlayersJoined() {
         if (MoveRelayerScript.Instance != null) {
-            _tmpText.text = GenerateDisplayText(MoveRelayerScript.Instance.ConnectedClients.Count);
+            _tmpText.text = GenerateDisplayText(MoveRelayerScript.Instance.GetNumPlayersJoined());
         }
     }
 

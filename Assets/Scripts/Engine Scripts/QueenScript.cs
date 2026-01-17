@@ -86,7 +86,6 @@ public class QueenScript : PieceScript {
             }
         }
 
-
         (int, int) queenPostPosition = AddMove(move); // Center position of queenbomb
         List<PieceType> footmenList = new List<PieceType> { PieceType.Footmen }; // Returned Footmen list
         Dictionary<(int, int), List<PieceType>> endingPiecePositions = new();
@@ -103,9 +102,9 @@ public class QueenScript : PieceScript {
             if (BoardScript.IsEmptySquare(explodeMoveTargetPosition)) {
                 // Spawning onto empty square is legal
                 endingPiecePositions.Add(explodeMoveTargetPosition, footmenList);
-            } else if (BoardScript.GetPieceType(explodeMoveTargetPosition) != PieceType.Pawn &&
-                       BoardScript.GetPieceType(explodeMoveTargetPosition) != PieceType.King) {
-                // Spawning onto square without pawn or king also legal
+            } else if (BoardScript.GetPieceType(explodeMoveTargetPosition) != PieceType.King) {
+                // Spawning onto square without king also legal
+                // 06/19/2024 PATCH: Pawn capturable by queen mother
                 endingPiecePositions.Add(explodeMoveTargetPosition, footmenList);
             }
         }
